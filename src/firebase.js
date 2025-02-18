@@ -2,13 +2,13 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAkjQw3Mj-CVbfOeetqcybeKCIgrTps8y8",
-  authDomain: "acol-ds.firebaseapp.com",
-  projectId: "acol-ds",
-  storageBucket: "acol-ds.firebasestorage.app",
-  messagingSenderId: "795890660499",
-  appId: "1:795890660499:web:53aa690f52ebd854d34966",
-  measurementId: "G-KRJCLVQT7G"
+ apiKey: "AIzaSyBTEuGAD2MDaShqbXR1pBQ-SY2XW_7Q6XA",
+  authDomain: "acol-pool.firebaseapp.com",
+  projectId: "acol-pool",
+  storageBucket: "acol-pool.firebasestorage.app",
+  messagingSenderId: "659103503233",
+  appId: "1:659103503233:web:93c8415021dbaf3bfc4e80",
+  measurementId: "G-ZQHM11VWWH"
 };
 
 // Initialize Firebase
@@ -18,3 +18,4 @@ const app = initializeApp(firebaseConfig);
 const firestore = getFirestore(app);
 
 export default firestore; 
+
