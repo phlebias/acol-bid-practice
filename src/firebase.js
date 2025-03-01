@@ -1,8 +1,9 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
- apiKey: "AIzaSyBTEuGAD2MDaShqbXR1pBQ-SY2XW_7Q6XA",
+  apiKey: "AIzaSyBTEuGAD2MDaShqbXR1pBQ-SY2XW_7Q6XA",
   authDomain: "acol-pool.firebaseapp.com",
   projectId: "acol-pool",
   storageBucket: "acol-pool.firebasestorage.app",
@@ -17,5 +18,8 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firestore
 const firestore = getFirestore(app);
 
-export default firestore; 
+// Initialize Firebase Authentication
+const auth = getAuth(app);
+
+export { firestore, auth };
 
