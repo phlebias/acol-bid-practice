@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { initializeFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -12,15 +12,32 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
+// Log Firebase configuration (without sensitive data)
+console.log('Firebase Project ID:', firebaseConfig.projectId);
+console.log('Firebase Auth Domain:', firebaseConfig.authDomain);
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with modern persistence settings
+// Initialize Firestore without persistence for now
 const firestore = initializeFirestore(app, {
-  cache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
+  experimentalForceLongPolling: true, // Use long polling to avoid websocket issues
 });
+
+// Enable persistence after initialization
+enableIndexedDbPersistence(firestore)
+  .then(() => {
+    console.log('Firestore persistence enabled successfully');
+  })
+  .catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (err.code === 'unimplemented') {
+      console.warn('The current browser does not support persistence.');
+    } else {
+      console.error('Error enabling persistence:', err);
+    }
+  });
 
 // Initialize Firebase Authentication
 const auth = getAuth(app);
