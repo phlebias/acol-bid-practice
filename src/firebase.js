@@ -19,12 +19,12 @@ console.log('Firebase Auth Domain:', firebaseConfig.authDomain);
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore without persistence for now
+// Initialize Firestore with memory cache fallback
 const firestore = initializeFirestore(app, {
-  experimentalForceLongPolling: true, // Use long polling to avoid websocket issues
+  cacheSizeBytes: 50 * 1024 * 1024  // 50 MB
 });
 
-// Enable persistence after initialization
+// Enable offline persistence
 enableIndexedDbPersistence(firestore)
   .then(() => {
     console.log('Firestore persistence enabled successfully');
@@ -34,12 +34,10 @@ enableIndexedDbPersistence(firestore)
       console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
     } else if (err.code === 'unimplemented') {
       console.warn('The current browser does not support persistence.');
-    } else {
-      console.error('Error enabling persistence:', err);
     }
   });
 
-// Initialize Firebase Authentication
+// Initialize Auth
 const auth = getAuth(app);
 
 export { firestore, auth };
