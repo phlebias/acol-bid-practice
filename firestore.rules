@@ -54,6 +54,10 @@ service cloud.firestore {
     match /savedDeals/{document} {
       allow read, write: if true; // Allow anyone to read/write saved deals for now
     }
+
+    match /bidding_issues/{document} {
+      allow read, write: if true; // Allow anyone to read/write bidding issues for reporting
+    }
     
     // Default rule - deny all other access
     match /{document=**} {

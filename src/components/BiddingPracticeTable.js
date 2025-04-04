@@ -268,10 +268,11 @@ function BiddingPracticeTable() {
             else if (suitLengths.D >= 6 && hasGoodSuitQuality(hand, 'D', suitLengths)) bid = '2D'; // Acol Weak 2D is sometimes conventional, but basic is ok
         }
         // 4. 1NT Opening (Acol: 15-17 balanced OR 12-14 balanced)
-        else if (isBalanced) {
-             if (hcp >= 15 && hcp <= 17) bid = '1NT';
-             else if (hcp >= 12 && hcp <= 14) bid = '1NT';
+        // 4. Weak 1NT Opening (Acol: 12-14 balanced)
+        else if (isBalanced && hcp >= 12 && hcp <= 14) {
+             bid = '1NT';
         }
+        // Note: 15-17 balanced hands will now fall through to the 1-level suit opening logic
         // 5. Rule of 20 (Consider opening light 10-11 HCP hands)
         else if (hcp >= 10 && hcp <= 11) {
              const sortedLengths = Object.values(suitLengths).sort((a, b) => b - a);
@@ -293,13 +294,18 @@ function BiddingPracticeTable() {
                  else if (suitLengths.D === 3) bid = '1D';
              }
         }
-         // 6. Standard 1-Level Suit Opening (12-19 HCP, not fitting above categories)
-        else if (hcp >= 12 && hcp <= 19) {
-             // Prioritize 5+ card suits
-             if      (suitLengths.S >= 5) bid = '1S';
-             else if (suitLengths.H >= 5) bid = '1H';
-             else if (suitLengths.D >= 5) bid = '1D';
-             else if (suitLengths.C >= 5) bid = '1C';
+         // 6. Standard 1-Level Suit Opening (12-19 HCP, unbalanced or 15-19 balanced)
+         else if (hcp >= 12 && hcp <= 19) {
+              // Priority: Open LONGEST suit first if 6+ cards
+              if      (suitLengths.S >= 6) bid = '1S';
+              else if (suitLengths.H >= 6) bid = '1H';
+              else if (suitLengths.D >= 6) bid = '1D';
+              else if (suitLengths.C >= 6) bid = '1C';
+              // Then prioritize 5+ card suits (higher rank first for 5-5)
+              else if (suitLengths.S >= 5) bid = '1S'; // Handles 5S-5H/D/C
+              else if (suitLengths.H >= 5) bid = '1H'; // Handles 5H-5D/C
+              else if (suitLengths.D >= 5) bid = '1D'; // Handles 5D-5C
+              else if (suitLengths.C >= 5) bid = '1C'; // Only 5 clubs
              // No 5+ card suit, open longest 4-card (Acol style)
              else if (suitLengths.H === 4 && suitLengths.S === 4) bid = '1H';
              else if (suitLengths.H === 4) bid = '1H';
@@ -307,12 +313,24 @@ function BiddingPracticeTable() {
              else if (suitLengths.D === 4) bid = '1D';
              else if (suitLengths.C === 4) bid = '1C';
              // 4-3-3-3 shape (must have 12-19 points)
-             else if (isBalanced) { // Should be caught by 1NT logic unless 18-19
+             // Handle balanced hands that didn't open 1NT (i.e., 15-17 or 18-19)
+             else if (isBalanced) {
+                 // Acol 15-17 Balanced: Prefer 4-card major if available, else open minor
+                 if (hcp >= 15 && hcp <= 17) {
+                     if (suitLengths.H === 4) { // Prefer Hearts if 4-4 majors
+                         bid = '1H';
+                     } else if (suitLengths.S === 4) {
+                         bid = '1S';
+                     } else {
+                         // No 4-card major, open minor (Prefer 1C unless 4 diamonds and 3 clubs or fewer)
+                         bid = (suitLengths.D === 4 && suitLengths.C <= 3) ? '1D' : '1C';
+                     }
+                 }
                  // Acol 18-19 Balanced: Open 1 of suit (often minor) and jump rebid NT
-                 if (hcp >= 18) {
+                 else if (hcp >= 18 && hcp <= 19) { // Adjusted range
                      bid = (suitLengths.C >= 3) ? '1C' : '1D'; // Simplification
                  }
-                 // If somehow 12-14/15-17 balanced got here, pass (should have bid NT)
+                 // Note: 20+ balanced hands are handled by 2NT/2C openings earlier
              }
         }
 
@@ -371,6 +389,8 @@ function BiddingPracticeTable() {
             else if (suitLengths.S >= 5 && isValidBid('2H', currentAuction, bidder)) { response = '2H'; } // Transfer to Spades
             // Priority 2: Stayman (Acol: 8+ HCP, at least one 4-card major) - only if no transfer shown
             else if (hcp >= 8 && has4CardMajor && isValidBid('2C', currentAuction, bidder)) { response = '2C'; }
+            // Priority 3: Raise to 2NT (Invitational, 11-12 HCP balanced, NO 4/5 card major)
+            // Note: If 11-12 points but unbalanced or unsuitable for Stayman/Transfer, this logic will now correctly fall through to Pass.
             // Priority 3: Raise to 2NT (Invitational, 11-12 HCP balanced, NO 4/5 card major)
             else if (hcp >= 11 && hcp <= 12 && isBalanced && !has4CardMajor && !has5CardMajor && isValidBid('2NT', currentAuction, bidder)) { response = '2NT'; }
             // Priority 4: Raise to 3NT (Game, 13+ HCP balanced, NO 4/5 card major suitable for Stayman/Transfer)
@@ -467,39 +487,67 @@ function BiddingPracticeTable() {
                  const partnerSuit = partnerLastBid.length === 2 ? partnerLastBid.charAt(1) : null;
                  const partnerLevel = partnerSuit ? parseInt(partnerLastBid.charAt(0), 10) : 0;
 
-                 // 1. Raise Partner's Suit Response?
-                 if (partnerSuit && partnerSuit !== 'NT') {
-                     const supportCount = suitLengths[partnerSuit] || 0;
-                     if (supportCount >= 4 && hcp >= 15 && hcp <= 17) { // Simple Invitational+ Raise (e.g., 1S-2H; 3H)
-                         const targetBid = `${partnerLevel + 1}${partnerSuit}`;
-                         if (isValidBid(targetBid, currentAuction, bidder)) bid = targetBid;
-                     } else if (supportCount >= 3 && hcp >= 12 && hcp <= 14) { // Simple Minimum Raise (e.g., 1S-2C; 2C) - Needs refinement
-                         // const targetBid = `${partnerLevel}${partnerSuit}`; // Unused - Rebid at same level if possible? Risky. Let's raise.
-                         const raiseBid = `${partnerLevel + (partnerLevel === 1 ? 1 : 0)}${partnerSuit}`; // Simplistic raise
-                          if (isValidBid(raiseBid, currentAuction, bidder)) bid = raiseBid;
-                     }
-                 }
+                 // --- Opener Rebid Logic ---
 
-                 // 2. Specific Case: 1S -> 2H response -> Rebid 2NT (15-16 pts, no fit)
-                 if (bid === 'Pass' && myOpeningBid === '1S' && partnerLastBid === '2H') {
-                     if (hcp >= 15 && hcp <= 16 && (suitLengths['H'] || 0) < 3) {
-                         // Check stoppers (simplified: assume stoppers for now)
-                         if (isValidBid('2NT', currentAuction, bidder)) {
-                             bid = '2NT';
+                 // Case 1: Opener opened 1NT
+                 if (myOpeningBid === '1NT') {
+                     // Partner responded 2C (Stayman)
+                     if (partnerLastBid === '2C') {
+                         console.log(`Computer (${bidder}) Rebidding after 1NT - 2C (Stayman)`);
+                         if (suitLengths.H >= 4 && isValidBid('2H', currentAuction, bidder)) {
+                             bid = '2H'; // Show 4 Hearts (might also have 4 Spades)
+                         } else if (suitLengths.S >= 4 && isValidBid('2S', currentAuction, bidder)) {
+                             bid = '2S'; // Show 4 Spades (but not 4 Hearts)
+                         } else if (isValidBid('2D', currentAuction, bidder)) {
+                             bid = '2D'; // Deny 4-card major
                          }
                      }
-                 }
-
-                 // 3. Rebid own suit? (Simple minimum rebid)
-                 if (bid === 'Pass' && myOpeningBid.length === 2) {
-                     const openedSuit = myOpeningBid.charAt(1);
-                     if (suitLengths[openedSuit] >= 6 && hcp >= 12 && hcp <= 14) { // Minimum hand, 6+ card suit
-                         const targetBid = `2${openedSuit}`;
-                         if (isValidBid(targetBid, currentAuction, bidder)) bid = targetBid;
+                     // Partner responded 2D (Transfer to Hearts)
+                     else if (partnerLastBid === '2D') {
+                          console.log(`Computer (${bidder}) Accepting Heart transfer (1NT - 2D)`);
+                          bid = isValidBid('2H', currentAuction, bidder) ? '2H' : 'Pass'; // Usually mandatory accept
+                          // TODO: Add super-accept logic (e.g., jump to 3H with max + 4 hearts)
                      }
+                     // Partner responded 2H (Transfer to Spades)
+                     else if (partnerLastBid === '2H') {
+                          console.log(`Computer (${bidder}) Accepting Spade transfer (1NT - 2H)`);
+                          bid = isValidBid('2S', currentAuction, bidder) ? '2S' : 'Pass'; // Usually mandatory accept
+                          // TODO: Add super-accept logic
+                     }
+                     // TODO: Handle other responses like 2S (minors), 2NT (invite), 3C/D/H/S (GF), 3NT (to play)
                  }
-
-                 // Add more rebid logic: New suits, NT rebids, Jumps etc.
+                 // Case 2: Opener opened a suit
+                 else if (myOpeningBid.length === 2 && !myOpeningBid.includes('NT')) {
+                     // Sub-case 2a: Raise Partner's Suit Response?
+                     if (partnerSuit && partnerSuit !== 'NT') {
+                         const supportCount = suitLengths[partnerSuit] || 0;
+                         if (supportCount >= 4 && hcp >= 15 && hcp <= 17) { // Simple Invitational+ Raise (e.g., 1S-2H; 3H)
+                             const targetBid = `${partnerLevel + 1}${partnerSuit}`;
+                             if (isValidBid(targetBid, currentAuction, bidder)) bid = targetBid;
+                         } else if (supportCount >= 3 && hcp >= 12 && hcp <= 14) { // Simple Minimum Raise (e.g., 1S-2C; 2C) - Needs refinement
+                             const raiseBid = `${partnerLevel + (partnerLevel === 1 ? 1 : 0)}${partnerSuit}`; // Simplistic raise
+                             if (isValidBid(raiseBid, currentAuction, bidder)) bid = raiseBid;
+                         }
+                     }
+                     // Sub-case 2b: Specific Case: 1S -> 2H response -> Rebid 2NT (15-16 pts, no fit)
+                     else if (bid === 'Pass' && myOpeningBid === '1S' && partnerLastBid === '2H') {
+                         if (hcp >= 15 && hcp <= 16 && (suitLengths['H'] || 0) < 3) {
+                             if (isValidBid('2NT', currentAuction, bidder)) { // Add stopper check later
+                                 bid = '2NT';
+                             }
+                         }
+                     }
+                     // Sub-case 2c: Rebid own suit? (Simple minimum rebid)
+                     else if (bid === 'Pass') { // Only if no other bid found yet
+                         const openedSuit = myOpeningBid.charAt(1);
+                         if (suitLengths[openedSuit] >= 6 && hcp >= 12 && hcp <= 14) { // Minimum hand, 6+ card suit
+                             const targetBid = `2${openedSuit}`;
+                             if (isValidBid(targetBid, currentAuction, bidder)) bid = targetBid;
+                         }
+                     }
+                     // TODO: Add more rebid logic: New suits, NT rebids, Jumps etc.
+                 }
+                 // TODO: Handle rebids after 2C opening, Weak Twos etc.
 
              }
              // Fallback if no specific rebid found yet
@@ -589,6 +637,127 @@ function BiddingPracticeTable() {
                  }
              }
              // TODO: Responses to Weak Twos, other openings
+        }
+        // --- B2. Partner Opened, I Responded, Partner Rebid (Responder's Rebid) ---
+        // This handles the case: N: 1H -> S: 2D -> N: 2H -> S: ?
+        else if (partnerOpened && bidderFirstBidIndex !== -1 && lastActualBidder === partner && !opponentIntervened) {
+            const myFirstBidData = currentAuction[bidderFirstBidIndex];
+            const myFirstBid = myFirstBidData?.bid;
+            const partnerOpeningBidData = currentAuction[partnerFirstBidIndex];
+            const partnerOpeningBid = partnerOpeningBidData?.bid;
+            const partnerRebid = partnerLastBid; // Partner's most recent bid
+
+            console.log(`Computer (${bidder}) Making Responder's Rebid over partner's opening ${partnerOpeningBid} and rebid ${partnerRebid}, my first bid was ${myFirstBid}`);
+
+            // Estimate partner's points based on their rebid (Simplified)
+            let partnerMinPoints = 12;
+            let partnerMaxPoints = 19; // Default opening range
+            if (partnerRebid && partnerOpeningBid && partnerRebid.length === 2 && partnerOpeningBid.length === 2) {
+                const rebidLevel = parseInt(partnerRebid.charAt(0), 10);
+                const openingLevel = parseInt(partnerOpeningBid.charAt(0), 10);
+                // Simple minimum rebid (e.g., 1H -> 2H) usually shows minimum points (12-14)
+                if (rebidLevel === openingLevel + 1 && partnerRebid.charAt(1) === partnerOpeningBid.charAt(1)) {
+                     partnerMinPoints = 12;
+                     partnerMaxPoints = 14;
+                     console.log(`Computer (${bidder}) estimates partner has minimum opening (12-14) based on rebid ${partnerRebid}`);
+                }
+                // TODO: Add logic for jump rebids (e.g., 1H -> 3H shows 15-17), NT rebids etc.
+            }
+
+            const totalMinPoints = hcp + partnerMinPoints;
+            const totalMaxPoints = hcp + partnerMaxPoints;
+
+            // Game Zone Check (Simplified: 25+ points)
+            if (totalMinPoints >= 25) {
+                 console.log(`Computer (${bidder}) In Game Zone (${totalMinPoints}-${totalMaxPoints} points)`);
+                 // Priority 1: Bid 3NT if balanced and stoppers (simplified check)
+                 const partnerSuit = partnerOpeningBid.charAt(1);
+                 const hasStopperInUnbid = SUITS.every(s => s === partnerSuit || (suitLengths[s] || 0) > 0 || hasStopper(hand, s, suitLengths)); // Very basic stopper check
+                 if (isBalanced && hasStopperInUnbid && isValidBid('3NT', currentAuction, bidder)) {
+                     bid = '3NT';
+                 }
+                 // Priority 2: Raise partner's major to game if fit (3+ cards)
+                 else if (MAJORS.includes(partnerSuit) && (suitLengths[partnerSuit] || 0) >= 3) {
+                     const gameBid = `4${partnerSuit}`;
+                     if (isValidBid(gameBid, currentAuction, bidder)) {
+                         bid = gameBid;
+                     }
+                 }
+                 // Priority 3: Rebid own good suit (6+ cards) at appropriate level? Needs care.
+                 // Example: 1H-2D; 2H-3D (forcing)
+                 else if (myFirstBid.length === 2 && myFirstBid.charAt(1) !== 'NT' && (suitLengths[myFirstBid.charAt(1)] || 0) >= 6) {
+                     const mySuit = myFirstBid.charAt(1);
+                     const targetBid = `3${mySuit}`; // Forcing rebid
+                     if (isValidBid(targetBid, currentAuction, bidder)) {
+                         bid = targetBid;
+                     }
+                 }
+                 // Fallback if game bid not obvious (e.g., bid cheapest 4-card suit as a temporizer?) - Needs more advanced logic
+                 else if (bid === 'Pass') {
+                     // As a fallback for 18 points, 3NT is often reasonable if balanced.
+                     if (isBalanced && isValidBid('3NT', currentAuction, bidder)) {
+                         bid = '3NT';
+                     }
+                     // Or raise partner if possible
+                     else if (MAJORS.includes(partnerSuit) && (suitLengths[partnerSuit] || 0) >= 3 && isValidBid(`4${partnerSuit}`, currentAuction, bidder)) {
+                         bid = `4${partnerSuit}`;
+                     }
+                     // Last resort - maybe just bid 3NT anyway if points are high? Risky.
+                     else if (isValidBid('3NT', currentAuction, bidder)) {
+                         console.warn(`Computer (${bidder}) making fallback 3NT bid with ${hcp} points`);
+                         bid = '3NT';
+                     }
+                 }
+            }
+            // Invitational Zone Check (Simplified: 23-24 points total)
+            else if (totalMinPoints >= 23 && totalMaxPoints >= 23) { // Aiming for 25
+                 console.log(`Computer (${bidder}) In Invitational Zone (${totalMinPoints}-${totalMaxPoints} points)`);
+                 const partnerSuit = partnerOpeningBid.charAt(1);
+                 // Priority 1: Bid 2NT if balanced and stoppers
+                 if (isBalanced && isValidBid('2NT', currentAuction, bidder)) { // Add stopper check later
+                     bid = '2NT';
+                 }
+                 // Priority 2: Raise partner's major invitational level (3H/3S)
+                 else if (MAJORS.includes(partnerSuit) && (suitLengths[partnerSuit] || 0) >= 3) {
+                     const inviteBid = `3${partnerSuit}`;
+                     if (isValidBid(inviteBid, currentAuction, bidder)) {
+                         bid = inviteBid;
+                     }
+                 }
+                 // Priority 3: Rebid own suit invitational level? (e.g. 1H-2C; 2H-3C)
+                 else if (myFirstBid.length === 2 && myFirstBid.charAt(1) !== 'NT' && (suitLengths[myFirstBid.charAt(1)] || 0) >= 6) {
+                     const mySuit = myFirstBid.charAt(1);
+                     const targetBid = `3${mySuit}`;
+                     if (isValidBid(targetBid, currentAuction, bidder)) {
+                         bid = targetBid;
+                     }
+                 }
+            }
+            // Minimum Zone (Below invitational)
+            else {
+                 console.log(`Computer (${bidder}) In Minimum Zone (${totalMinPoints}-${totalMaxPoints} points), passing.`);
+                 bid = 'Pass'; // Default action if not inviting or game-forcing
+            }
+
+            // Final check if still Pass, ensure minimum action taken if required (e.g. 2NT over 1H-1S; 2H)
+            if (bid === 'Pass' && hcp >= 10) { // Should generally not pass with 10+
+                 console.warn(`Computer (${bidder}) reconsidering Pass with ${hcp} points in Responder Rebid`);
+                 // Add minimal rebid logic if needed, e.g., rebid 2NT if possible
+                 if (isBalanced && isValidBid('2NT', currentAuction, bidder)) {
+                     bid = '2NT';
+                 }
+                 // Or rebid own suit minimally?
+                 else if (myFirstBid.length === 2 && myFirstBid.charAt(1) !== 'NT' && (suitLengths[myFirstBid.charAt(1)] || 0) >= 5) {
+                     const mySuit = myFirstBid.charAt(1);
+                     const targetBid = `2${mySuit}`; // Check if this is valid level
+                     if (isValidBid(targetBid, currentAuction, bidder)) {
+                         // Ensure this isn't lower than partner's rebid!
+                         if (getBidRank(targetBid) > getBidRank(partnerRebid)) {
+                            bid = targetBid;
+                         }
+                     }
+                 }
+            }
         }
 
         // --- C. Partner Opened, Opponent Intervened (Responder's Action) ---
@@ -945,10 +1114,10 @@ const bidderIndex = playersOrder.indexOf(nextBidder);
 // Corrected check: Is the current bidder the dealer AND the auction empty?
 const isDealerOpening = (dealer === nextBidder && auction.length === 0);
 // OR is it not the dealer's turn, but everyone before passed?
-const isNonDealerOpening = (dealer !== nextBidder &&
-                            Array.isArray(auction) &&
-                            auction.length === bidderIndex &&
-                            auction.slice(0, bidderIndex).every(b => b && b.bid === 'Pass'));
+const isNonDealerOpening = (dealer !== nextBidder &&      // Current bidder is not the dealer
+                            Array.isArray(auction) &&     // Auction is valid
+                            auction.length > 0 &&         // At least one pass has occurred
+                            auction.every(b => b && b.bid === 'Pass')); // All bids so far are Pass
 const isOpening = isDealerOpening || isNonDealerOpening;
 
 if (isOpening) {
@@ -1273,6 +1442,40 @@ if (isOpening) {
         }
     };
 
+    // --- Report Bidding Issue Functionality ---
+    const handleReportIssue = async () => {
+        const issueDescription = window.prompt("Please describe the bidding issue:");
+        if (issueDescription) { // Proceed only if the user entered text and clicked OK
+            const issueData = {
+                northHand: hands.N,
+                eastHand: hands.E,
+                southHand: hands.S,
+                westHand: hands.W,
+                dealer: dealer,
+                vulnerability: vulnerability,
+                auction: auction,
+                issueDescription: issueDescription, // Add the description
+                reportedAt: serverTimestamp() // Add the timestamp
+            };
+            try {
+                // Ensure firestore is defined and accessible here
+                if (!firestore) {
+                    console.error("Firestore instance is not available.");
+                    alert("Error reporting issue: Firestore not initialized.");
+                    return;
+                }
+                const docRef = await addDoc(collection(firestore, "bidding_issues"), issueData); // Use new collection
+                console.log("Bidding issue reported with ID: ", docRef.id);
+                alert("Bidding issue reported successfully!");
+            } catch (e) {
+                console.error("Error reporting bidding issue: ", e);
+                alert("Error reporting bidding issue.");
+            }
+        } else {
+            console.log("Bidding issue report cancelled."); // Optional: log cancellation
+        }
+    };
+
     // --- Deal Assessment (FROM OLD CODE) ---
     const getAssessment = (points) => {
         if (points >= 20) return "Very Strong Hand (Consider 2C opening)";
@@ -1292,6 +1495,7 @@ if (isOpening) {
           <h1>Bridge Bidding Practice</h1>
           <button onClick={() => generateNewDeal(false)} className="new-deal-btn">New Deal</button>
           <button onClick={handleSaveDeal} className="save-deal-btn btn">Save Deal</button> {/* Added Save Button */}
+          <button onClick={handleReportIssue} className="report-issue-btn btn">Report Bidding Issue</button> {/* Added Report Button */}
 
           <div className="position-selector">
             <label htmlFor="positionSelect">Your Position:</label>

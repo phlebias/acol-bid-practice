@@ -31,3 +31,4 @@ firebase-debug.log*
 # Service account keys
 /keys/
 *.json.key
+serviceAccountKey.json
