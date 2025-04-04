@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions for security rules
+    function isValidSize() {
+      let maxSize = 10000; // 10KB limit
+      return request.resource.size < maxSize;
+    }
+    
+    function hasValidContent() {
+      let content = request.resource.data.text;
+      return content is string 
+             && content.size() < 5000  // 5000 char limit
+             && !content.matches("^(Spam|Malicious).*");
+    }
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function isDevelopment() {
+      return request.auth != null && (
+        request.auth.token.admin == true || 
+        request.resource.data.devMode == true
+      );
+    }
+
+    // For development mode - allow all operations
+    function isLocalhost() {
+      return request.headers.origin == 'http://localhost:3000' || 
+             request.headers.origin == 'http://localhost:5000';
+    }
+
+    // Collection-specific rules
+    match /keyIdeas/{document} {
+      allow read: if true;  // Anyone can read
+      allow write: if isDevelopment() || isAdmin();
+    }
+    
+    match /conventions/{document} {
+      allow read: if true;  // Anyone can read
+      allow write: if isDevelopment() || isAdmin();
+    }
+    
+    match /rules/{document} {
+      allow read: if true;  // Anyone can read
+      allow write: if isDevelopment() || isAdmin();
+    }
+    
+    match /test/{document} {
+      allow read, write: if true;  // Allow all operations on test collection
+    }
+    
+    match /savedDeals/{document} {
+      allow read, write: if true; // Allow anyone to read/write saved deals for now
+    }
+    
+    // Default rule - deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions for security rules
+    function isValidSize() {
+      let maxSize = 10000; // 10KB limit
+      return request.resource.size < maxSize;
+    }
+    
+    function hasValidContent() {
+      let content = request.resource.data.text;
+      return content is string 
+             && content.size() < 5000  // 5000 char limit
+             && !content.matches("^(Spam|Malicious).*");
+    }
+
+    // Collection-specific rules for production
+    match /keyIdeas/{document} {
+      allow read: if true;  // Anyone can read
+      allow write: if request.auth != null 
+                  && request.auth.token.admin == true
+                  && isValidSize()
+                  && hasValidContent();
+    }
+    
+    match /conventions/{document} {
+      allow read: if true;  // Anyone can read
+      allow write: if request.auth != null 
+                  && request.auth.token.admin == true
+                  && isValidSize()
+                  && hasValidContent();
+    }
+    
+    match /rules/{document} {
+      allow read: if true;  // Anyone can read
+      allow write: if request.auth != null 
+                  && request.auth.token.admin == true
+                  && isValidSize()
+                  && hasValidContent();
+    }
+  }
+} 

@@ -1,0 +1,370 @@
+/* Basic styling for the Bidding Practice Table */
+
+.bidding-practice-container {
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.new-deal-btn {
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+/* Style for the position selector */
+.position-selector {
+  text-align: center;
+  margin-bottom: 15px;
+}
+.position-selector label {
+  margin-right: 8px;
+  font-weight: bold;
+}
+.position-selector select {
+  padding: 5px;
+  border-radius: 4px;
+}
+
+/* Style for the Deal Assessment section */
+.deal-assessment {
+  text-align: center;
+  margin: 15px auto;
+  padding: 10px;
+  border: 1px solid #adb5bd; /* Grey border */
+  background-color: #f8f9fa; /* Light background */
+  border-radius: 5px;
+  max-width: 400px; /* Limit width */
+  font-size: 0.9em;
+  color: #000; /* Explicitly set text color */
+}
+.deal-assessment div {
+  margin-bottom: 5px;
+}
+.deal-assessment div:last-child {
+  margin-bottom: 0;
+}
+
+/* Container for side-by-side layout */
+.table-and-bidding-container {
+display: flex;
+flex-direction: row; /* Arrange items horizontally */
+  justify-content: center; /* Center items horizontally */
+  align-items: flex-start; /* Align items to the top */
+  gap: 15px; /* Reduced space between table and bidding box */
+  margin-top: 20px; /* Add some space above */
+}
+
+.bridge-table {
+  display: grid;
+  /* Rows: Label N, Hand N, Middle Row, Hand S, Label S */
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: 10px; /* Reduced gap slightly */
+  border: 1px solid #ccc;
+  align-items: center; /* Center items vertically in rows */
+  justify-items: center; /* Center items horizontally */
+  padding: 10px; /* Slightly reduced padding */
+  max-width: 650px; /* Further reduced table width */
+  /* margin: 0 auto; Remove auto margin as flex container handles centering */
+  background-color: #2E7D32; /* Darker green background */
+}
+
+.middle-row {
+  display: grid;
+  /* Columns: Label W, Hand W, Center, Hand E, Label E */
+  /* Use fr units for hands to distribute space more evenly */
+  grid-template-columns: auto 1fr auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  grid-row: 3 / 4;
+  grid-column: 1 / -1;
+}
+
+.hand {
+  border: 1px solid #aaa;
+  padding: 10px;
+  background-color: #fff;
+  /* width: fit-content; */ /* Keep commented out */
+  /* min-height removed */
+  /* margin: 0 auto; */
+  text-align: center; /* Center text within the hand box */
+}
+ 
+.hand h2 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  font-size: 1.1em;
+  text-align: center;
+}
+
+/* Remove the obsolete .hand p rule */
+/* Apply styles to the div holding the hand display */
+.hand > div {
+  font-family: monospace;
+  font-size: 1.8em; /* Significantly reduced card font size */
+  white-space: pre-wrap; /* Keep spacing, might need adjustment */
+  line-height: 1.1; /* Adjust line height for large font */
+  margin: 0;
+  /* Color is handled inline by JS */
+}
+
+/* Style for hidden hands */
+.hidden-hand {
+  font-style: italic;
+  color: #888;
+  text-align: center;
+  padding: 20px 0; /* Add some padding */
+  font-size: 1.2em; /* Adjust size */
+}
+
+/* Grid alignment handles positioning, remove specific text-align */
+/* .north, .south { } */
+/* .west { } */
+/* .east { } */
+
+/* Assign grid positions for main table items */
+.north-label { grid-row: 1 / 2; }
+.hand.north  { grid-row: 2 / 3; }
+/* .middle-row assigned above */
+.hand.south  { grid-row: 4 / 5; }
+.south-label { grid-row: 5 / 6; }
+
+/* Assign grid positions for middle row items */
+.west-label  { grid-column: 1 / 2; justify-self: center; }
+.hand.west   { grid-column: 2 / 3; justify-self: center; } /* Center hand box */
+.table-center{ grid-column: 3 / 4; }
+.hand.east   { grid-column: 4 / 5; justify-self: center; } /* Center hand box */
+.east-label  { grid-column: 5 / 6; justify-self: center; }
+
+.table-center {
+  /* Placeholder for dealer/vul info */
+  min-width: 100px;
+  text-align: center;
+  display: flex; /* Use flexbox for inner content */
+  align-items: center;
+  justify-content: center;
+}
+
+/* Style for the position labels */
+.position-label {
+  font-size: 2em; /* Adjust size as needed */
+  font-weight: bold;
+  color: white;
+  padding: 5px;
+}
+
+/* Style the optional center labels */
+.table-center .center-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.6); /* Lighter white */
+  font-size: 1.2em;
+  line-height: 1;
+}
+.table-center .center-labels div {
+  display: flex;
+  justify-content: space-between;
+  width: 50px; /* Adjust as needed */
+}
+
+/* Use existing button styles if available, or add basic ones */
+.btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}
+
+/* --- Auction Display Styles --- */
+.auction-display {
+  border: 1px solid #ccc;
+  padding: 5px;
+  margin-top: 15px; /* Space above auction */
+  margin-bottom: 15px; /* Space below auction */
+  background-color: #fff;
+  width: 200px; /* Adjust width as needed */
+  margin-left: auto; /* Center it for now */
+  margin-right: auto;
+}
+
+.auction-header, .auction-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* N, E, S, W */
+  text-align: center;
+}
+
+.auction-header {
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 3px;
+  margin-bottom: 3px;
+}
+
+.auction-cell {
+  padding: 2px 4px;
+  border: 1px solid #eee; /* Light border for cells */
+  min-height: 1.5em; /* Ensure cells have height even if empty */
+  font-size: 0.9em; /* Explicit font size */
+  color: #000; /* Explicit black color */
+}
+
+.auction-cell.empty {
+  border: none; /* Hide border for empty padding cells */
+}
+
+/* Style for Vulnerability display */
+.vulnerability-display {
+  color: rgba(255, 255, 255, 0.8); /* Lighter white */
+  font-size: 0.9em;
+  font-weight: bold;
+  margin-bottom: 5px; /* Space below it */
+}
+
+/* Style for the label above the bidding box */
+.bidding-box-label {
+  font-size: 1.1em;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* Style for the HCP display */
+.hcp-display {
+  font-size: 1em; /* Smaller font size than cards */
+  font-family: sans-serif; /* Standard font */
+  text-align: center; /* Center the text */
+  margin-top: 8px; /* Add some space above */
+  color: #0056b3; /* Dark React blue */
+  background-color: #cfe2ff; /* Light React blue background */
+  padding: 4px 8px; /* Add padding to create a box */
+  border-radius: 4px; /* Slightly rounded corners */
+  display: inline-block; /* Make the background fit the text width */
+}
+
+/* --- Bidding Box Styles --- */
+.bidding-box-container {
+  /* margin-top: 20px; Remove top margin as container gap handles spacing */
+  padding: 10px;
+  border: 1px solid #ccc;
+  background-color: #f8f9fa; /* Light grey background */
+  max-width: 280px; /* Further reduced bidding box width */
+  /* margin-left: auto; Remove auto margins */
+  /* margin-right: auto; */
+  max-width: 350px; /* Adjust width as needed */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.bidding-controls {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+}
+
+.bidding-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 columns: C, D, H, S, NT */
+  gap: 5px;
+}
+
+.bid-button {
+  padding: 6px 4px; /* Reduced padding */
+  font-size: 0.9em; /* Slightly smaller font */
+  font-weight: bold;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #fff;
+  text-align: center;
+  min-width: 45px; /* Reduced minimum width */
+}
+
+.bid-button:hover {
+  background-color: #e9ecef; /* Light hover effect */
+}
+
+.bid-button.pass {
+  background-color: #28a745; /* Green */
+  color: white;
+  border-color: #28a745;
+}
+.bid-button.pass:hover {
+  background-color: #218838;
+}
+
+.bid-button.double {
+  background-color: #dc3545; /* Red */
+  color: white;
+  border-color: #dc3545;
+}
+.bid-button.double:hover {
+  background-color: #c82333;
+}
+
+.bid-button.redouble {
+  background-color: #007bff; /* Blue */
+  color: white;
+  border-color: #007bff;
+}
+.bid-button.redouble:hover {
+  background-color: #0056b3;
+}
+
+/* Color for NT bids is handled inline, but ensure black text */
+.bid-button.level-denom[style*="color: black"] {
+  color: black !important;
+}
+
+/* Style for disabled bid buttons */
+.bid-button:disabled {
+  background-color: #e9ecef; /* Grey background */
+  color: #adb5bd !important; /* Lighter text color, override inline style */
+  cursor: not-allowed;
+  border-color: #ced4da;
+}
+
+/* Styles for Opponent Action */
+.opponent-action-container {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  background-color: #f8f9fa;
+  max-width: 350px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.opponent-action-container p {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+.opponent-pass-btn {
+  background-color: #ffc107; /* Yellow */
+  color: #212529;
+}
+.opponent-pass-btn:hover {
+   background-color: #e0a800;
+}
+
+/* Style for Auction Ended Message */
+.auction-ended-message {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  background-color: #e9ecef;
+  max-width: 350px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font-weight: bold;
+  color: #495057;
+}

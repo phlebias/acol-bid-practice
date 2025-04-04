@@ -1,0 +1,103 @@
+.landing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  background-color: var(--react-dark-blue);
+  padding: 2rem;
+  perspective: 1000px; /* Adds 3D perspective */
+}
+
+.landing-title {
+  font-size: 4.5rem;
+  color: var(--react-blue);
+  margin-bottom: 3rem;
+  text-shadow: 2px 2px 4px var(--shadow-color);
+}
+
+.landing-logo {
+  width: 400px; /* Change to your desired width */
+  height: auto; /* Maintain aspect ratio */
+  margin-bottom: 3rem;
+  transform-style: preserve-3d; /* Enables 3D transform */
+}
+
+/* Updated spin animation */
+@keyframes spin {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+.spin {
+  animation: spin 8s linear infinite;
+  transform-style: preserve-3d;
+}
+
+/* Alternative animations you can try - just change the class name in the JSX to use a different one */
+@keyframes spinVertical {
+  from {
+    transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(360deg);
+  }
+}
+
+@keyframes spinDiagonal {
+  from {
+    transform: rotate3d(1, 1, 0, 0deg);
+  }
+  to {
+    transform: rotate3d(1, 1, 0, 360deg);
+  }
+}
+
+.spin-vertical {
+  animation: spinVertical 8s linear infinite;
+  transform-style: preserve-3d;
+}
+
+.spin-diagonal {
+  animation: spinDiagonal 8s linear infinite;
+  transform-style: preserve-3d;
+}
+
+.landing-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.landing-btn {
+  min-width: 200px;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: var(--react-blue);
+  color: var(--react-dark-blue);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.landing-btn:hover {
+  transform: scale(1.05);
+  background-color: #4fa8c7;
+}
+
+.admin-landing-btn {
+  background-color: #28a745;
+}
+
+.admin-landing-btn:hover {
+  background-color: #218838;
+}
+
+/* Rest of your existing styles... */

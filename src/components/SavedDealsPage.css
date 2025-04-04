@@ -1,0 +1,40 @@
+.saved-deals-container {
+  padding: 20px;
+}
+
+.deals-list {
+  list-style: none;
+  padding: 0;
+}
+
+.deal-item {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.deal-item span {
+  margin-right: 15px;
+}
+
+.analyze-btn {
+  background-color: #6c757d; /* Grey */
+  color: white;
+}
+
+.analyze-btn:hover {
+  background-color: #5a6268;
+}
+
+.delete-btn {
+  background-color: #dc3545; /* Red */
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
