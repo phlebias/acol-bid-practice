@@ -81,7 +81,15 @@ const displayHand = (hand) => {
   if (!hand || hand.length === 0) return <div style={{ color: '#888' }}>No cards</div>;
   const suits = { S: [], H: [], D: [], C: [] };
   if (Array.isArray(hand)) {
-      const sortedHand = [...hand].sort((a, b) => RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank));
+      // Sort within the display function to ensure correct order
+      const sortedHand = [...hand].sort((a, b) => {
+          const suitIndexA = SUITS.indexOf(a.suit);
+          const suitIndexB = SUITS.indexOf(b.suit);
+          if (suitIndexA !== suitIndexB) {
+              return suitIndexA - suitIndexB;
+          }
+          return RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank);
+      });
       sortedHand.forEach(card => {
         if (card && card.suit && card.rank && suits[card.suit]) {
             suits[card.suit].push(card.rank);
@@ -123,7 +131,7 @@ function BiddingPracticeTable() {
   const [nextBidder, setNextBidder] = useState('N');
   const [auction, setAuction] = useState([]);
   const [isAuctionOver, setIsAuctionOver] = useState(false);
-  const [userPosition, setUserPosition] = useState('All');
+  const [userPosition, setUserPosition] = useState('All'); // Default to seeing all hands
 
   // --- Memoized Callbacks (Define before useEffect that uses them) ---
 
@@ -148,7 +156,7 @@ function BiddingPracticeTable() {
   }, []);
 
   const isUserTurn = useCallback(() => {
-    if (userPosition === 'All') return true;
+    if (userPosition === 'All') return true; // If user sees all, they can always bid
     if (userPosition === nextBidder) return true;
     return false;
   }, [userPosition, nextBidder]);
@@ -166,10 +174,38 @@ function BiddingPracticeTable() {
     const lastActualBidRank = getBidRank(lastActualBid?.bid);
     const newBidRank = getBidRank(bid);
 
+    // --- Bid Validation Logic ---
+    // 1. Insufficient Bid Check
     if (!['Pass', 'X', 'XX'].includes(bid) && newBidRank <= lastActualBidRank) {
       alert(`Insufficient bid: ${bid} is not higher than ${lastActualBid?.bid || 'anything'}`);
       return;
     }
+
+    // 2. Double (X) Validation
+    if (bid === 'X') {
+        const lastBid = auction[auction.length - 1];
+        const lastBidder = lastBid?.bidder;
+        const partner = playersOrder[(playersOrder.indexOf(nextBidder) + 2) % 4];
+        // Can only double if the last bid was by an opponent and was not Pass/X/XX
+        if (!lastBid || ['Pass', 'X', 'XX'].includes(lastBid.bid) || lastBidder === partner) {
+            alert("Invalid Double (X). Can only double an opponent's contract bid.");
+            return;
+        }
+    }
+
+    // 3. Redouble (XX) Validation
+    if (bid === 'XX') {
+        const lastBid = auction[auction.length - 1];
+        const lastBidder = lastBid?.bidder;
+        const partner = playersOrder[(playersOrder.indexOf(nextBidder) + 2) % 4];
+        // Can only redouble if the last bid was a Double (X) by an opponent
+        if (!lastBid || lastBid.bid !== 'X' || lastBidder === partner) {
+            alert("Invalid Redouble (XX). Can only redouble an opponent's Double (X).");
+            return;
+        }
+    }
+    // --- End Bid Validation ---
+
 
     const newAuction = [...auction, { bidder: nextBidder, bid: bid }];
     setAuction(newAuction);
@@ -183,6 +219,7 @@ function BiddingPracticeTable() {
       const lastThreeBids = newAuction.slice(-3);
       if (lastThreeBids.every(item => item.bid === 'Pass')) {
         const bidsBeforeLastThree = newAuction.slice(0, -3);
+        // Auction ends if last 3 are Pass, AND (either there was a bid before that OR all 4 bids were Pass)
         if (bidsBeforeLastThree.some(item => item.bid !== 'Pass') || newAuction.every(item => item.bid === 'Pass')) {
             setIsAuctionOver(true);
             console.log("Auction ended!");
@@ -384,14 +421,6 @@ const getComputerBid = useCallback(() => {
             console.log(`Computer (${nextBidder}) responding to partner's ${partnerLastBid}. HCP: ${computerHCP}, Support: ${supportCount}`);
             let response = 'Pass'; // Default
 
-            // Game Raise (13-15 HCP, 4+ support)
-            if (computerHCP >= 13 && computerHCP <= 15 && supportCount >= 4 && isValidResponse(`4${openedSuit}`)) response = `4${openedSuit}`;
-            // Limit Raise (10-12 HCP, 4+ support)
-            else if (computerHCP >= 10 && computerHCP <= 12 && supportCount >= 4 && isValidResponse(`3${openedSuit}`)) response = `3${openedSuit}`;
-            // Change of Suit at 2-level (10+ HCP)
-            else if (computerHCP >= 10) {
-                if (isBalanced && computerHCP <= 12 && isValidResponse('2NT')) response = '2NT'; // 10-12 Bal
-            // Removed duplicate declarations of openedSuit, supportCount, and response
             // --- Determine Response based on HCP and Shape (Rewritten with strict if/else if chain) ---
 
             // Priority 1: Game Raise (13-15 HCP, 4+ support)
@@ -497,111 +526,188 @@ const getComputerBid = useCallback(() => {
              else {
                  // --- Computer Makes Own Overcall / Competitive Bid ---
                  // (Partner didn't open AND partner didn't overcall)
-             console.log(`Computer (${nextBidder}) considering making its own overcall/competitive action.`);
-             // Check for Double of opponent's 1NT opening (16+ HCP)
-             const lastBidData = auction.length > 0 ? auction[auction.length - 1] : null;
-             const lastBidderIsOpponent = lastBidData && lastBidData.bidder !== nextBidder && lastBidData.bidder !== partner;
-             const lastBidWas1NT = lastBidData && lastBidData.bid === '1NT';
+                 console.log(`Computer (${nextBidder}) considering making its own overcall/competitive action.`);
+                 let competitiveBid = 'Pass'; // Default
 
-             if (lastBidderIsOpponent && lastBidWas1NT && computerHCP >= 16 && isValidResponse('X')) {
-                 console.log(`Computer (${nextBidder}) doubling opponent's 1NT with ${computerHCP} HCP.`);
-                 return 'X';
+                 // Simple Overcall (8-16 HCP, good 5+ card suit)
+                 if (computerHCP >= 8 && computerHCP <= 16) {
+                     // Find the highest ranking valid overcall
+                     if (suitLengths.S >= 5 && isValidResponse('1S')) competitiveBid = '1S';
+                     if (suitLengths.H >= 5 && isValidResponse('1H')) competitiveBid = '1H';
+                     if (suitLengths.D >= 5 && isValidResponse('1D')) competitiveBid = '1D';
+                     if (suitLengths.C >= 5 && isValidResponse('1C')) competitiveBid = '1C';
+                     // Consider 2-level overcalls if necessary and valid
+                     if (competitiveBid === 'Pass') { // Only if no 1-level overcall possible
+                         if (suitLengths.S >= 5 && isValidResponse('2S')) competitiveBid = '2S';
+                         if (suitLengths.H >= 5 && isValidResponse('2H')) competitiveBid = '2H';
+                         if (suitLengths.D >= 5 && isValidResponse('2D')) competitiveBid = '2D';
+                         if (suitLengths.C >= 5 && isValidResponse('2C')) competitiveBid = '2C';
+                     }
+                 }
+                 // 1NT Overcall (15-18 HCP, balanced, stopper in opponent's suit)
+                 const lastOpponentBidData = [...auction].reverse().find(b => b.bidder !== nextBidder && b.bidder !== partner && !['Pass', 'X', 'XX'].includes(b.bid));
+                 if (lastOpponentBidData && computerHCP >= 15 && computerHCP <= 18 && isBalanced && isValidResponse('1NT')) {
+                     // Basic stopper check (Ace, King, or Qx+) - simplified
+                     const oppSuit = lastOpponentBidData.bid.charAt(1);
+                     const hasStopper = computerHand.some(c => c.suit === oppSuit && ['A', 'K'].includes(c.rank)) ||
+                                        (computerHand.filter(c => c.suit === oppSuit && c.rank === 'Q').length > 0 && suitLengths[oppSuit] >= 2);
+                     if (hasStopper) {
+                         competitiveBid = '1NT';
+                     }
+                 }
+                 // TODO: Add other competitive actions like takeout doubles, jump overcalls, etc.
+
+                 if (competitiveBid !== 'Pass') {
+                     console.log(`Computer (${nextBidder}) making competitive bid: ${competitiveBid}`);
+                 } else {
+                     console.log(`Computer (${nextBidder}) has no competitive action. Passing.`);
+                 }
+                 return competitiveBid;
              }
-
-             // Basic Overcall: 8-15 HCP, good 5+ card suit (if didn't double 1NT)
-             const lastActualBid = [...auction].reverse().find(item => !['Pass', 'X', 'XX'].includes(item.bid)); // Define lastActualBid here
-             console.log(`Computer (${nextBidder}) checking overcalls. Last actual bid: ${lastActualBid?.bid || 'None'}`);
-            const canOvercall1S = suitLengths.S >= 5 && computerHCP >= 8 && computerHCP <= 15 && isValidResponse('1S');
-            const canOvercall1H = suitLengths.H >= 5 && computerHCP >= 8 && computerHCP <= 15 && isValidResponse('1H');
-            const canOvercall1D = suitLengths.D >= 5 && computerHCP >= 8 && computerHCP <= 15 && isValidResponse('1D');
-            const canOvercall1C = suitLengths.C >= 5 && computerHCP >= 8 && computerHCP <= 15 && isValidResponse('1C');
-             console.log(`Computer (${nextBidder}) canOvercall1S=${canOvercall1S} (HCP=${computerHCP}, Len=${suitLengths.S}, Valid=${isValidResponse('1S')})`);
-             console.log(`Computer (${nextBidder}) canOvercall1H=${canOvercall1H} (HCP=${computerHCP}, Len=${suitLengths.H}, Valid=${isValidResponse('1H')})`);
-             console.log(`Computer (${nextBidder}) canOvercall1D=${canOvercall1D} (HCP=${computerHCP}, Len=${suitLengths.D}, Valid=${isValidResponse('1D')})`);
-             console.log(`Computer (${nextBidder}) canOvercall1C=${canOvercall1C} (HCP=${computerHCP}, Len=${suitLengths.C}, Valid=${isValidResponse('1C')})`);
-
-            if (canOvercall1S) return '1S';
-            if (canOvercall1H) return '1H';
-            if (canOvercall1D) return '1D';
-            if (canOvercall1C) return '1C';
-
-            // Basic NT Overcall: 15-18 HCP, balanced, stopper in opponent's suit
-            console.log(`Computer (${nextBidder}) checking NT overcall. canOvercall1NT=${canOvercall1NT} (HCP=${computerHCP}, Bal=${isBalanced}, Valid=${isValidResponse('1NT')})`);
-            const lastOpponentBidData = [...auction].reverse().find(b => b.bidder !== nextBidder && b.bidder !== partner && !['Pass', 'X', 'XX'].includes(b.bid));
-            const canOvercall1NT = isBalanced && computerHCP >= 15 && computerHCP <= 18 && isValidResponse('1NT'); // Add stopper check
-            if (canOvercall1NT && lastOpponentBidData) {
-                const oppSuit = lastOpponentBidData.bid.length === 2 ? lastOpponentBidData.bid.charAt(1) : null;
-                let hasStopper = false; // Basic stopper check logic needs refinement
-                if (oppSuit && suitLengths[oppSuit] > 0) {
-                    const oppSuitHand = computerHand.filter(c => c.suit === oppSuit);
-                    if (oppSuitHand.some(c => c.rank === 'A')) hasStopper = true;
-                    else if (oppSuitHand.some(c => c.rank === 'K') && suitLengths[oppSuit] >= 2) hasStopper = true;
-                    else if (oppSuitHand.some(c => c.rank === 'Q') && suitLengths[oppSuit] >= 3) hasStopper = true;
-                    else if (oppSuitHand.some(c => c.rank === 'J') && suitLengths[oppSuit] >= 4) hasStopper = true;
-                }
-                 if (hasStopper) return '1NT';
-            }
-
-            // Default pass if no simple action available
-            console.log(`Computer (${nextBidder}) passing (no standard competitive action found).`);
-            return 'Pass';
         }
-        } // Close the inner 'else' block (computer makes own overcall)
-    } // Close the outer 'else' block (partner did not open)
-} // <<<< ADDED: Close the main 'else' block (for non-opening bids)
-}, [hands, nextBidder, auction, isAuctionOver, isValidResponse, determineBestPositiveResponse, determineNTResponse]); // Added helper dependencies
-
-  // --- Effects ---
-
-  // Generate initial deal
-  useEffect(() => {
-    generateNewDeal(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Intentionally empty
-
-  // Handle automatic computer bids
-  useEffect(() => {
-    if (isAuctionOver || isUserTurn()) {
-      return;
     }
-    console.log(`Computer's turn (${nextBidder}), thinking...`);
-    const timer = setTimeout(() => {
-      const computerBid = getComputerBid();
-      console.log(`Computer (${nextBidder}) bids: ${computerBid}`);
-      handleBid(computerBid);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [nextBidder, isAuctionOver, auction, isUserTurn, getComputerBid, handleBid]); // Dependencies correct
+}, [hands, nextBidder, isAuctionOver, auction, isValidResponse, determineBestPositiveResponse, determineNTResponse]); // Added helper dependencies
 
-  // --- Calculations for Rendering ---
 
+  // --- Effect Hooks ---
+  useEffect(() => {
+    generateNewDeal(true); // Generate initial deal on component mount
+  }, [generateNewDeal]); // Add generateNewDeal as dependency
+
+  useEffect(() => {
+    if (!isAuctionOver && !isUserTurn()) {
+      const timer = setTimeout(() => {
+        const bid = getComputerBid();
+        handleBid(bid);
+      }, 1000); // 1-second delay for computer bid
+      return () => clearTimeout(timer); // Cleanup timer on unmount or if state changes
+    }
+  }, [nextBidder, isAuctionOver, isUserTurn, getComputerBid, handleBid]); // Dependencies updated
+
+  // --- Rendering Logic ---
   const isVisible = (position) => {
     if (userPosition === 'All') return true;
-    if (userPosition === position) return true;
-    return false;
+    return userPosition === position;
   };
 
-  const northHandDisplay = isVisible('N') ? displayHand(hands.N) : <div className="hidden-hand">Hidden</div>;
-  const eastHandDisplay = isVisible('E') ? displayHand(hands.E) : <div className="hidden-hand">Hidden</div>;
-  const southHandDisplay = isVisible('S') ? displayHand(hands.S) : <div className="hidden-hand">Hidden</div>;
-  const westHandDisplay = isVisible('W') ? displayHand(hands.W) : <div className="hidden-hand">Hidden</div>;
+  const renderAuction = () => {
+    const rows = [];
+    const header = <div className="auction-header" key="header">
+      {playersOrder.map(p => <div key={p}>{p}</div>)}
+    </div>;
+    rows.push(header);
 
-  const northHCP = isVisible('N') ? calculateHCP(hands.N) : null;
-  const eastHCP = isVisible('E') ? calculateHCP(hands.E) : null;
-  const southHCP = isVisible('S') ? calculateHCP(hands.S) : null;
-  const westHCP = isVisible('W') ? calculateHCP(hands.W) : null;
+    let currentRow = [];
+    let bidCountInRow = 0;
+    const startingIndex = playersOrder.indexOf(dealer);
 
-  const lastActualBidForDisable = [...auction].reverse().find(
-    item => !['Pass', 'X', 'XX'].includes(item.bid)
-  );
-  const lastActualBidRankForDisable = getBidRank(lastActualBidForDisable?.bid);
+    // Add padding cells before the first bid
+    for (let i = 0; i < startingIndex; i++) {
+      currentRow.push(<div className="auction-cell empty" key={`pad-${i}`}></div>);
+      bidCountInRow++;
+    }
 
+    auction.forEach((item, index) => {
+      currentRow.push(<div className="auction-cell" key={index}>{item.bid}</div>);
+      bidCountInRow++;
+      if (bidCountInRow === 4) {
+        rows.push(<div className="auction-row" key={`row-${rows.length}`}>{currentRow}</div>);
+        currentRow = [];
+        bidCountInRow = 0;
+      }
+    });
+
+    // Add the last partial row if it exists
+    if (currentRow.length > 0) {
+      // Add padding cells to complete the row
+      while (bidCountInRow < 4) {
+        currentRow.push(<div className="auction-cell empty" key={`pad-end-${bidCountInRow}`}></div>);
+        bidCountInRow++;
+      }
+      rows.push(<div className="auction-row" key={`row-${rows.length}`}>{currentRow}</div>);
+    }
+
+    return <div className="auction-display">{rows}</div>;
+  };
+
+  const renderBiddingBox = () => {
+    if (isAuctionOver) {
+      return <div className="auction-ended-message">Auction Ended</div>;
+    }
+
+    const lastActualBid = [...auction].reverse().find(item => !['Pass', 'X', 'XX'].includes(item.bid));
+    const lastActualBidRank = getBidRank(lastActualBid?.bid);
+    const lastBid = auction[auction.length - 1];
+    const lastBidder = lastBid?.bidder;
+    const partner = playersOrder[(playersOrder.indexOf(nextBidder) + 2) % 4];
+    const canDouble = lastBid && !['Pass', 'X', 'XX'].includes(lastBid.bid) && lastBidder !== partner;
+    const canRedouble = lastBid && lastBid.bid === 'X' && lastBidder !== partner;
+
+    return (
+      <div className="bidding-box-container">
+        <div className="bidding-box-label">Next to Bid: {nextBidder}</div>
+        <div className="bidding-controls">
+          <button
+            className="bid-button pass"
+            onClick={() => handleBid('Pass')}
+            disabled={!isUserTurn()}
+          >
+            Pass
+          </button>
+          <button
+            className="bid-button double"
+            onClick={() => handleBid('X')}
+            disabled={!isUserTurn() || !canDouble}
+          >
+            X
+          </button>
+          <button
+            className="bid-button redouble"
+            onClick={() => handleBid('XX')}
+            disabled={!isUserTurn() || !canRedouble}
+          >
+            XX
+          </button>
+        </div>
+        <div className="bidding-grid">
+          {Array.from({ length: 7 }, (_, i) => i + 1).map(level => (
+            denominations.map(denom => {
+              const bid = `${level}${denom}`;
+              const bidRank = getBidRank(bid);
+              const isDisabled = !isUserTurn() || bidRank <= lastActualBidRank;
+              const color = (denom === 'H' || denom === 'D') ? 'red' : 'black';
+              const symbol = denom === 'C' ? '♣' : denom === 'D' ? '♦' : denom === 'H' ? '♥' : denom === 'S' ? '♠' : '';
+
+              return (
+                <button
+                  key={bid}
+                  className="bid-button level-denom"
+                  onClick={() => handleBid(bid)}
+                  disabled={isDisabled}
+                  style={{ color: color }}
+                >
+                  {level}{symbol || denom /* Show symbol or NT */}
+                </button>
+              );
+            })
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // --- Save Deal Functionality ---
   const handleSaveDeal = async () => {
     const dealData = {
-      northHand: hands.N, eastHand: hands.E, southHand: hands.S, westHand: hands.W, // Use initials
-      dealer: dealer, vulnerability: vulnerability, createdAt: serverTimestamp()
+      north: hands.N.map(c => c.rank + c.suit).join(','), // Store as comma-separated strings
+      east: hands.E.map(c => c.rank + c.suit).join(','),
+      south: hands.S.map(c => c.rank + c.suit).join(','),
+      west: hands.W.map(c => c.rank + c.suit).join(','),
+      dealer: dealer,
+      vulnerability: vulnerability,
+      auction: auction, // Store the full auction history
+      createdAt: serverTimestamp()
     };
-    console.log("Saving deal - Hand lengths:", { N: dealData.northHand?.length, E: dealData.eastHand?.length, S: dealData.southHand?.length, W: dealData.westHand?.length });
     try {
       const docRef = await addDoc(collection(firestore, "savedDeals"), dealData);
       console.log("Deal saved with ID: ", docRef.id);
@@ -612,153 +718,111 @@ const getComputerBid = useCallback(() => {
     }
   };
 
-  const nsPoints = northHCP !== null && southHCP !== null ? northHCP + southHCP : null;
-  const ewPoints = eastHCP !== null && westHCP !== null ? eastHCP + westHCP : null;
-
+  // --- Deal Assessment ---
   const getAssessment = (points) => {
-    if (points === null) return '';
-    if (points >= 37) return "Grand Slam Possible";
-    if (points >= 33) return "Small Slam Possible";
-    if (points >= 25) return "Game Possible";
-    if (points >= 20) return "Part Score Likely";
-    return "Competitive";
+      if (points >= 20) return "Very Strong Hand (Consider 2C opening)";
+      if (points >= 15) return "Strong Opening Hand (15-19)";
+      if (points >= 12) return "Opening Hand (12-14)";
+      if (points >= 8) return "Invitational Hand";
+      if (points >= 6) return "Responding Hand";
+      return "Weak Hand";
   };
 
-  const nsAssessment = getAssessment(nsPoints);
-  const ewAssessment = getAssessment(ewPoints);
-
-  // --- Render ---
   return (
     <div className="bidding-practice-container">
-      <h1>Bidding Practice (Acol)</h1>
-      <button onClick={() => generateNewDeal(false)} className="btn new-deal-btn">
-        New Deal
-      </button>
-      <button onClick={handleSaveDeal} className="btn save-deal-btn" style={{ marginLeft: '10px', backgroundColor: '#17a2b8' }}>
-        Save Deal
-      </button>
+      <h1>Bridge Bidding Practice</h1>
+      <button onClick={() => generateNewDeal(false)} className="new-deal-btn">New Deal</button>
+      <button onClick={handleSaveDeal} className="save-deal-btn btn">Save Deal</button> {/* Added Save Button */}
 
       <div className="position-selector">
-        <label>Your Position: </label>
-        <select value={userPosition} onChange={(e) => setUserPosition(e.target.value)}>
-          <option value="All">View All</option>
+        <label htmlFor="positionSelect">Your Position:</label>
+        <select
+          id="positionSelect"
+          value={userPosition}
+          onChange={(e) => setUserPosition(e.target.value)}
+        >
           <option value="N">North</option>
-          <option value="S">South</option>
           <option value="E">East</option>
+          <option value="S">South</option>
           <option value="W">West</option>
-          {/* Removed NS/EW options */}
+          <option value="All">Show All</option>
         </select>
       </div>
 
-      <div className="deal-assessment">
-        {/* Conditionally render assessment based on visibility */}
-        {isVisible('N') && isVisible('S') && nsPoints !== null && <div>N/S: {nsPoints} HCP ({nsAssessment})</div>}
-        {isVisible('E') && isVisible('W') && ewPoints !== null && <div>E/W: {ewPoints} HCP ({ewAssessment})</div>}
-      </div>
+      {/* Deal Assessment Section */}
+      {userPosition !== 'All' && hands[userPosition] && (
+          <div className="deal-assessment">
+              <div><strong>Your Hand Assessment ({userPosition}):</strong></div>
+              <div>HCP: {calculateHCP(hands[userPosition])}</div>
+              <div>Assessment: {getAssessment(calculateHCP(hands[userPosition]))}</div>
+          </div>
+      )}
+
 
       <div className="table-and-bidding-container">
         <div className="bridge-table">
-          <div className="position-label north-label">N {dealer === 'N' && '(D)'}</div>
-          <div className="hand north">
-            <div>{northHandDisplay}</div>
-            {northHCP !== null && <div className="hcp-display">HCP: {northHCP}</div>}
+          {/* North */}
+          <div className="position-label north-label">N</div>
+          <div className={`hand north ${!isVisible('N') ? 'hidden-hand' : ''}`}>
+            {isVisible('N') ? (
+              <>
+                {displayHand(hands.N)}
+                <div className="hcp-display">HCP: {calculateHCP(hands.N)}</div>
+              </>
+            ) : "Hidden"}
           </div>
+
+          {/* Middle Row (West, Center, East) */}
           <div className="middle-row">
-            <div className="position-label west-label">W {dealer === 'W' && '(D)'}</div>
-            <div className="hand west">
-              <div>{westHandDisplay}</div>
-              {westHCP !== null && <div className="hcp-display">HCP: {westHCP}</div>}
+            <div className="position-label west-label">W</div>
+            <div className={`hand west ${!isVisible('W') ? 'hidden-hand' : ''}`}>
+              {isVisible('W') ? (
+                <>
+                  {displayHand(hands.W)}
+                  <div className="hcp-display">HCP: {calculateHCP(hands.W)}</div>
+                </>
+              ) : "Hidden"}
             </div>
             <div className="table-center">
-              <div className="vulnerability-display">
-                Vulnerable: {vulnerability}
+              <div className="center-labels">
+                 <div className="vulnerability-display">Vul: {vulnerability}</div>
+                 <div>Dealer: {dealer}</div>
+                 {/* Optional: Add N/S E/W labels */}
+                 {/*
+                 <div><span>N</span><span>S</span></div>
+                 <div><span>W</span><span>E</span></div>
+                 */}
               </div>
             </div>
-            <div className="hand east">
-              <div>{eastHandDisplay}</div>
-              {eastHCP !== null && <div className="hcp-display">HCP: {eastHCP}</div>}
+            <div className={`hand east ${!isVisible('E') ? 'hidden-hand' : ''}`}>
+              {isVisible('E') ? (
+                <>
+                  {displayHand(hands.E)}
+                  <div className="hcp-display">HCP: {calculateHCP(hands.E)}</div>
+                </>
+              ) : "Hidden"}
             </div>
-            <div className="position-label east-label">E {dealer === 'E' && '(D)'}</div>
+            <div className="position-label east-label">E</div>
           </div>
-          <div className="hand south">
-            <div>{southHandDisplay}</div>
-            {southHCP !== null && <div className="hcp-display">HCP: {southHCP}</div>}
+
+          {/* South */}
+          <div className={`hand south ${!isVisible('S') ? 'hidden-hand' : ''}`}>
+            {isVisible('S') ? (
+              <>
+                {displayHand(hands.S)}
+                <div className="hcp-display">HCP: {calculateHCP(hands.S)}</div>
+              </>
+            ) : "Hidden"}
           </div>
-          <div className="position-label south-label">S {dealer === 'S' && '(D)'}</div>
+          <div className="position-label south-label">S</div>
         </div>
 
-        <div className="auction-display">
-          <div className="auction-header">
-            <div>N</div><div>E</div><div>S</div><div>W</div>
-          </div>
-          <div className="auction-bids">
-            {(() => {
-              const dealerIndex = playersOrder.indexOf(dealer);
-              const padding = Array(dealerIndex).fill(null);
-              const paddedAuction = [...padding, ...auction];
-              const rows = paddedAuction.reduce((acc, item, index) => {
-                const rowIndex = Math.floor(index / 4);
-                if (!acc[rowIndex]) acc[rowIndex] = [];
-                acc[rowIndex].push(item);
-                return acc;
-              }, []);
-              return rows.map((row, rowIndex) => (
-                <div key={rowIndex} className="auction-row">
-                  {[...Array(4)].map((_, cellIndex) => {
-                    const bidData = row[cellIndex];
-                    return (
-                      <div key={cellIndex} className={`auction-cell ${!bidData ? 'empty' : ''}`}>
-                        {bidData ? `${bidData.bidder}: ${bidData.bid}` : ''}
-                      </div>
-                    );
-                  })}
-                </div>
-              ));
-            })()}
-          </div>
+        {/* Auction Display and Bidding Box */}
+        <div className="bidding-area">
+          {renderAuction()}
+          {renderBiddingBox()}
         </div>
-
-        {/* Bidding Box (only shown if user's turn or view all) */}
-        {!isAuctionOver && isUserTurn() && (
-          <div className="bidding-box-container">
-            <div className="bidding-box-label">{nextBidder} to bid:</div>
-            <div className="bidding-controls">
-              <button className="bid-button pass" onClick={() => handleBid('Pass')}>Pass</button>
-              <button className="bid-button double" onClick={() => handleBid('X')}>X</button>
-              <button className="bid-button redouble" onClick={() => handleBid('XX')}>XX</button>
-            </div>
-            <div className="bidding-grid">
-              {[...Array(7)].map((_, levelIndex) => (
-                <React.Fragment key={levelIndex}>
-                  {[...SUITS, 'NT'].map((denom) => {
-                    const level = levelIndex + 1;
-                    const bid = `${level}${denom === 'NT' ? 'NT' : suitSymbols[denom]}`;
-                    const color = denom === 'NT' ? 'black' : suitColors[denom];
-                    const bidValue = `${level}${denom}`;
-                    const isDisabled = getBidRank(bidValue) <= lastActualBidRankForDisable;
-                    return (
-                      <button
-                        key={`${level}-${denom}`}
-                        className="bid-button level-denom"
-                        style={{ color: color }}
-                        onClick={() => handleBid(bidValue)}
-                        disabled={isDisabled}
-                      >
-                        {bid}
-                      </button>
-                    );
-                  })}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-        )}
-        {/* Auction Ended Message */}
-        {isAuctionOver && (
-           <div className="auction-ended-message">Auction Ended</div>
-        )}
-
-      </div> {/* End of table-and-bidding-container */}
+      </div>
     </div>
   );
 }
