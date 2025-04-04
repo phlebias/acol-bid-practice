@@ -73,6 +73,7 @@ function SavedDealsPage() {
 
   // Function to generate and download PBN file
   const downloadPbnFile = (deal) => {
+    console.log("Attempting PBN download for deal:", deal); // Log the input deal object
     if (!deal) {
       console.error("No deal data provided for PBN download.");
       return;
@@ -85,8 +86,15 @@ function SavedDealsPage() {
         S: deal.southHand,
         W: deal.westHand
     };
-
-    // 2. Format all hands first
+ 
+    // 2. Check if all hands exist before formatting
+    if (!handData.N || !handData.E || !handData.S || !handData.W) {
+        console.error("Deal object is missing one or more hands:", deal);
+        alert("Error: Cannot generate PBN file because the deal data is incomplete.");
+        return; // Stop execution if any hand is missing
+    }
+ 
+    // 3. Format all hands (only if all exist)
     const formattedHands = {
         N: formatHandPBN(handData.N),
         E: formatHandPBN(handData.E),
@@ -94,29 +102,32 @@ function SavedDealsPage() {
         W: formatHandPBN(handData.W)
     };
 
-    // 3. Construct the PBN Hand String in clockwise order starting from dealer
+    // 4. Construct the PBN Hand String in clockwise order starting from dealer
     const playersClockwise = ['N', 'E', 'S', 'W'];
-    const dealerIndex = playersClockwise.indexOf(deal.dealer);
+    // Ensure dealer is valid, default to 'N' if not found or invalid
+    const validDealer = playersClockwise.includes(deal.dealer) ? deal.dealer : 'N';
+    const dealerIndex = playersClockwise.indexOf(validDealer);
     const hand1 = formattedHands[playersClockwise[dealerIndex]];
     const hand2 = formattedHands[playersClockwise[(dealerIndex + 1) % 4]];
     const hand3 = formattedHands[playersClockwise[(dealerIndex + 2) % 4]];
     const hand4 = formattedHands[playersClockwise[(dealerIndex + 3) % 4]];
-
-    const pbnHandsString = `[Deal "${deal.dealer}:${hand1} ${hand2} ${hand3} ${hand4}"]`;
-
-    // 3. Add other relevant PBN tags (optional but good practice)
-    const dealerPBN = deal.dealer || 'N'; // Default dealer if missing
-    const vulMapPBN = { 'None': 'None', 'NS': 'NS', 'EW': 'EW', 'Both': 'All' }; // PBN vulnerability names
-    const vulPBN = vulMapPBN[deal.vulnerability] || 'None';
-    const pbnHeader = `[Dealer "${dealerPBN}"]\n[Vulnerable "${vulPBN}"]\n`;
-
-    // 4. Combine into full PBN content
-    const pbnContent = `${pbnHeader}${pbnHandsString}\n`;
-    // console.log("Generated PBN Content:", pbnContent); // Remove log
  
-    // 5. Create and trigger download link
+    const pbnHandsString = `[Deal "${validDealer}:${hand1} ${hand2} ${hand3} ${hand4}"]`;
+
+    // 5. Add other relevant PBN tags (optional but good practice)
+    // Use the validated dealer 'validDealer' here as well
+    const vulMapPBN = { 'None': 'None', 'NS': 'NS', 'EW': 'EW', 'Both': 'All' }; // PBN vulnerability names
+    const vulPBN = vulMapPBN[deal.vulnerability] || 'None'; // Default vulnerability if missing/invalid
+    const boardNumber = deal.id ? deal.id.substring(0, 8) : "1"; // Use first 8 chars of ID or "1"
+    const pbnHeader = `[Board "${boardNumber}"]\r\n[Dealer "${validDealer}"]\r\n[Vulnerable "${vulPBN}"]\r\n`;
+ 
+    // 6. Combine into full PBN content
+    const pbnContent = `${pbnHeader}${pbnHandsString}\r\n`;
+    console.log("Generated PBN Content:", pbnContent); // Log the generated PBN content
+ 
+    // 7. Create and trigger download link
     const element = document.createElement("a");
-    const file = new Blob([pbnContent], {type: 'application/vnd.bridge-pbn'});
+    const file = new Blob([pbnContent], {type: 'application/x-pbn'});
     element.href = URL.createObjectURL(file);
     element.download = `deal-${deal.id}.pbn`;
     document.body.appendChild(element);
