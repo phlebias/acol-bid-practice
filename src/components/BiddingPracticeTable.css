@@ -2,155 +2,172 @@
 
 .bidding-practice-container {
   padding: 20px;
+  background-color: #343a40;
+  min-height: 100vh;
+  color: white;
   font-family: sans-serif;
 }
 
-.new-deal-btn, .save-deal-btn { /* Apply to both buttons */
+.header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
   margin-bottom: 20px;
-  margin-right: 10px; /* Add space between buttons */
-  padding: 10px 15px;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Controls section */
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.new-deal-btn,
+.save-deal-btn {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
 }
 
-/* Style for the position selector */
+.save-deal-btn {
+  background-color: #007bff;
+  color: white;
+}
+
 .position-selector {
-  text-align: center;
-  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.position-selector label {
-  margin-right: 8px;
-  font-weight: bold;
-}
+
 .position-selector select {
   padding: 5px;
   border-radius: 4px;
 }
 
-/* Style for the Deal Assessment section */
-.deal-assessment {
-  text-align: center;
-  margin: 15px auto;
-  padding: 10px;
-  border: 1px solid #adb5bd; /* Grey border */
-  background-color: #f8f9fa; /* Light background */
-  border-radius: 5px;
-  max-width: 400px; /* Limit width */
-  font-size: 0.9em;
-  color: #000; /* Explicitly set text color */
-}
-.deal-assessment div {
-  margin-bottom: 5px;
-}
-.deal-assessment div:last-child {
-  margin-bottom: 0;
-}
-
-/* Container for side-by-side layout */
+/* Table and bidding layout */
 .table-and-bidding-container {
   display: flex;
-  flex-direction: row; /* Arrange items horizontally */
-  justify-content: center; /* Center items horizontally */
-  align-items: flex-start; /* Align items to the top */
-  gap: 20px; /* Increased space between table and bidding box */
-  margin-top: 20px; /* Add some space above */
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  gap: 20px;
 }
 
+/* Bridge table */
 .bridge-table {
+  background-color: #2E7D32;
+  padding: 20px;
+  border-radius: 8px;
+  position: relative;
+  width: 400px;
+  height: 400px;
   display: grid;
-  /* Rows: Label N, Hand N, Middle Row, Hand S, Label S */
-  grid-template-rows: auto auto 1fr auto auto;
-  gap: 5px; /* Reduced gap */
-  border: 2px solid #1a4d2e; /* Darker green border */
-  align-items: center; /* Center items vertically in rows */
-  justify-items: center; /* Center items horizontally */
-  padding: 15px; /* Increased padding */
-  max-width: 550px; /* Adjusted table width */
-  background-color: #2E7D32; /* Darker green background */
-  border-radius: 8px; /* Rounded corners */
-  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-}
-
-.middle-row {
-  display: grid;
-  /* Columns: Label W, Hand W, Center, Hand E, Label E */
-  grid-template-columns: auto minmax(100px, auto) auto minmax(100px, auto) auto; /* Give hands min width */
+  grid-template-areas: 
+    ". north ."
+    "west center east"
+    ". south .";
   align-items: center;
-  gap: 5px; /* Reduced gap */
-  width: 100%;
-  grid-row: 3 / 4;
-  grid-column: 1 / -1;
+  justify-items: center;
 }
 
 .hand {
-  border: 1px solid #aaa;
-  padding: 8px; /* Slightly reduced padding */
-  background-color: #fff;
-  border-radius: 4px; /* Rounded corners for hands */
-  min-width: 100px; /* Ensure minimum width */
-  text-align: left; /* Align hand text left */
-  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for hands */
+  background: white;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  min-width: 100px;
 }
 
-.hand h2 { /* This style might not be used if h2 removed from displayHand */
-  margin-top: 0;
-  margin-bottom: 5px;
-  font-size: 1.1em;
-  text-align: center;
-}
-
-/* Apply styles to the div holding the hand display */
-.hand > div {
-  font-family: 'Courier New', Courier, monospace; /* Monospace font */
-  font-size: 1.1em; /* Adjusted card font size */
-  white-space: pre; /* Keep spacing */
-  line-height: 1.2; /* Adjust line height */
-  margin: 0;
-  /* Color is handled inline by JS */
-}
-
-/* Style for hidden hands */
-.hidden-hand {
-  font-style: italic;
-  color: #888;
-  text-align: center;
-  padding: 20px 0; /* Add some padding */
-  font-size: 1.2em; /* Adjust size */
-  background-color: #e9ecef; /* Light grey background for hidden */
-  border: 1px dashed #ccc;
-  min-height: 100px; /* Ensure hidden hands have some height */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Grid alignment handles positioning, remove specific text-align */
-/* .north, .south { } */
-/* .west { } */
-/* .east { } */
-
-/* Assign grid positions for main table items */
-.north-label { grid-row: 1 / 2; }
-.hand.north  { grid-row: 2 / 3; }
-/* .middle-row assigned above */
-.hand.south  { grid-row: 4 / 5; }
-.south-label { grid-row: 5 / 6; }
-
-/* Assign grid positions for middle row items */
-.west-label  { grid-column: 1 / 2; justify-self: center; }
-.hand.west   { grid-column: 2 / 3; justify-self: stretch; } /* Stretch hand box */
-.table-center{ grid-column: 3 / 4; }
-.hand.east   { grid-column: 4 / 5; justify-self: stretch; } /* Stretch hand box */
-.east-label  { grid-column: 5 / 6; justify-self: center; }
+.hand.north { grid-area: north; }
+.hand.south { grid-area: south; }
+.hand.east { grid-area: east; }
+.hand.west { grid-area: west; }
 
 .table-center {
-  min-width: 80px; /* Reduced min-width */
+  grid-area: center;
+  color: white;
   text-align: center;
-  display: flex; /* Use flexbox for inner content */
-  flex-direction: column; /* Stack items vertically */
-  align-items: center;
-  justify-content: center;
+}
+
+/* Bidding box */
+.bidding-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.position-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.position-btn {
+  padding: 5px 10px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.position-btn.active {
+  background: #007bff;
+  color: white;
+}
+
+.next-bidder {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.bid-button {
   padding: 5px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-width: 30px;
+  font-size: 14px;
+}
+
+.bid-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bid-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+}
+
+.bid-button.red {
+  color: red;
+}
+
+/* Report issue button */
+.report-issue-btn {
+  margin-top: 20px;
+  padding: 8px 15px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Hand assessments */
+.hand-assessments {
+  margin-top: 20px;
+  color: white;
+  line-height: 1.4;
 }
 
 /* Style for the position labels */
@@ -178,60 +195,157 @@
   width: 50px; /* Adjust as needed */
 }
 
-/* Use existing button styles if available, or add basic ones */
-.btn {
-  background-color: #007bff;
+/* Style for hidden hands */
+.hidden-hand {
+  font-style: italic;
+  color: #888;
+  text-align: center;
+  padding: 20px 0; /* Add some padding */
+  font-size: 1.2em; /* Adjust size */
+  background-color: #e9ecef; /* Light grey background for hidden */
+  border: 1px dashed #ccc;
+  min-height: 100px; /* Ensure hidden hands have some height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Style for the HCP display */
+.hcp-display {
+  font-size: 0.9em; /* Slightly smaller */
+  font-family: sans-serif; /* Standard font */
+  text-align: center; /* Center the text */
+  margin-top: 5px; /* Reduced space above */
+  color: #333; /* Darker text */
+  background-color: #e9ecef; /* Lighter grey background */
+  padding: 3px 6px; /* Adjusted padding */
+  border-radius: 4px; /* Slightly rounded corners */
+  display: inline-block; /* Make the background fit the text width */
+  margin-left: 5px; /* Space from hand */
+}
+
+/* Style for the bidding issue boxes */
+.bidding-issue-box {
+  margin-top: 15px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.bidding-issue-box button {
+  background-color: #dc3545;
   color: white;
   border: none;
   border-radius: 4px;
   padding: 8px 12px;
   cursor: pointer;
   font-size: 1em;
+  margin: 5px;
 }
 
-.btn:hover {
-  background-color: #0056b3;
+.bidding-issue-box button:hover {
+  background-color: #c82333;
 }
 
-/* --- Auction Display Styles --- */
-.auction-display {
+.bidding-issue-box .issue-description {
+  margin-bottom: 10px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* Style for the bidding issue report form */
+.issue-report-form {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.issue-report-form textarea {
+  width: 100%;
+  min-height: 80px;
+  margin-bottom: 10px;
+  padding: 8px;
   border: 1px solid #ccc;
-  padding: 8px; /* Increased padding */
-  margin-bottom: 15px; /* Space below auction */
-  background-color: #fff;
-  width: 220px; /* Adjusted width */
-  border-radius: 4px; /* Rounded corners */
-  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  border-radius: 4px;
+  resize: vertical;
 }
 
-.auction-header, .auction-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* N, E, S, W */
-  text-align: center;
+.issue-report-form button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  cursor: pointer;
+}
+
+.issue-report-form button:hover {
+  background-color: #218838;
+}
+
+/* Style for the auction display */
+.auction-display {
+  margin-bottom: 1rem;
+  border: 1px solid #666;
+  border-radius: 4px;
+  padding: 0.5rem;
+  background: #f8f8f8;
 }
 
 .auction-header {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 0.5rem;
   font-weight: bold;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 4px; /* Increased padding */
-  margin-bottom: 4px; /* Increased margin */
-  color: #333;
+  text-align: center;
+  color: #000;
+}
+
+.auction-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
 }
 
 .auction-cell {
-  padding: 3px 5px; /* Adjusted padding */
-  border: 1px solid #eee; /* Light border for cells */
-  min-height: 1.6em; /* Ensure cells have height even if empty */
-  font-size: 1em; /* Increased font size */
-  color: #000; /* Explicit black color */
-  display: flex; /* Center content vertically */
-  align-items: center;
-  justify-content: center;
+  padding: 4px;
+  text-align: center;
+  border: 1px solid #999;
+  border-radius: 2px;
+  background: white;
+  color: #000;
+  font-weight: 500;
 }
 
 .auction-cell.empty {
-  border: none; /* Hide border for empty padding cells */
-  background-color: transparent; /* Ensure no background */
+  border: none;
+  background: transparent;
+}
+
+.auction-cell.pass {
+  background-color: #ddd;
+  color: #333;
+}
+
+.auction-cell.double {
+  background-color: #ffcccc;
+  color: #cc0000;
+  font-weight: bold;
+}
+
+.auction-cell.redouble {
+  background-color: #ff9999;
+  color: #990000;
+  font-weight: bold;
+}
+
+.auction-cell.red-suit {
+  color: #cc0000;
+  font-weight: bold;
 }
 
 /* Style for Vulnerability display */
@@ -254,119 +368,7 @@
   color: #333;
 }
 
-/* Style for the HCP display */
-.hcp-display {
-  font-size: 0.9em; /* Slightly smaller */
-  font-family: sans-serif; /* Standard font */
-  text-align: center; /* Center the text */
-  margin-top: 5px; /* Reduced space above */
-  color: #333; /* Darker text */
-  background-color: #e9ecef; /* Lighter grey background */
-  padding: 3px 6px; /* Adjusted padding */
-  border-radius: 4px; /* Slightly rounded corners */
-  display: inline-block; /* Make the background fit the text width */
-  margin-left: 5px; /* Space from hand */
-}
-
-/* --- Bidding Box Styles --- */
-.bidding-box-container {
-  padding: 15px; /* Increased padding */
-  border: 1px solid #ccc;
-  background-color: #f8f9fa; /* Light grey background */
-  max-width: 280px; /* Keep width */
-  border-radius: 6px; /* Rounded corners */
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow */
-}
-
-/* Container for the whole bidding area (auction + box) */
-.bidding-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center auction and bidding box */
-}
-
-
-.bidding-controls {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 15px; /* Increased space */
-}
-
-.bidding-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr); /* 5 columns: C, D, H, S, NT */
-  gap: 6px; /* Increased gap */
-}
-
-.bid-button {
-  padding: 8px 5px; /* Adjusted padding */
-  font-size: 1em; /* Increased font size */
-  font-weight: bold;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
-  background-color: #fff;
-  text-align: center;
-  min-width: 48px; /* Adjusted minimum width */
-  transition: background-color 0.2s ease, transform 0.1s ease; /* Smooth transitions */
-}
-
-.bid-button:hover:not(:disabled) { /* Apply hover only if not disabled */
-  background-color: #e9ecef; /* Light hover effect */
-  transform: translateY(-1px); /* Slight lift on hover */
-}
-.bid-button:active:not(:disabled) { /* Apply active only if not disabled */
-    transform: translateY(0px); /* Press down effect */
-}
-
-
-.bid-button.pass {
-  background-color: #28a745; /* Green */
-  color: white;
-  border-color: #28a745;
-}
-.bid-button.pass:hover:not(:disabled) {
-  background-color: #218838;
-}
-
-.bid-button.double {
-  background-color: #dc3545; /* Red */
-  color: white;
-  border-color: #dc3545;
-}
-.bid-button.double:hover:not(:disabled) {
-  background-color: #c82333;
-}
-
-.bid-button.redouble {
-  background-color: #007bff; /* Blue */
-  color: white;
-  border-color: #007bff;
-}
-.bid-button.redouble:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-/* Color for NT bids is handled inline, but ensure black text */
-.bid-button.level-denom[style*="color: black"] {
-  color: black !important;
-}
-/* Ensure red suits are red */
-.bid-button.level-denom[style*="color: red"] {
-  color: red !important;
-}
-
-
-/* Style for disabled bid buttons */
-.bid-button:disabled {
-  background-color: #e9ecef; /* Grey background */
-  color: #adb5bd !important; /* Lighter text color, override inline style */
-  cursor: not-allowed;
-  border-color: #ced4da;
-  opacity: 0.7; /* Make them look faded */
-}
-
-/* Styles for Opponent Action */
+/* Style for Opponent Action */
 .opponent-action-container {
   margin-top: 20px;
   padding: 15px;
