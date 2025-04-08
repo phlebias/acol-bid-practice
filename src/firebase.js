@@ -3,7 +3,7 @@ import { initializeFirestore, enableIndexedDbPersistence } from 'firebase/firest
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDz4wsn8oHgH6OBcsMXM3KFolvdtAh_OAQ",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: "acol-pool-new.firebaseapp.com",
   projectId: "acol-pool-new",
   storageBucket: "acol-pool-new.firebasestorage.app",
@@ -41,4 +41,3 @@ enableIndexedDbPersistence(firestore)
 const auth = getAuth(app);
 
 export { firestore, auth };
-
