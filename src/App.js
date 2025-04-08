@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
-import MainPage from './components/MainPage';
-import ContentPage from './components/ContentPage';
-import AdminPage from './components/AdminPage';
-import UserLogin from './components/UserLogin';
-import NavBar from './components/NavBar';
-import BiddingPracticeTable from './components/BiddingPracticeTable';
-import SavedDealsPage from './components/SavedDealsPage';
-import BridgeSolver from './components/BridgeSolver'; // Import BridgeSolver
-import { FEATURES } from './config';
+import LandingPage from './components/LandingPage.js';
+import MainPage from './components/MainPage.js';
+import ContentPage from './components/ContentPage.js';
+import AdminPage from './components/AdminPage.js';
+import UserLogin from './components/UserLogin.js';
+import NavBar from './components/NavBar.js';
+import BiddingPracticeTable from './components/BiddingPracticeTable.js';
+import SavedDealsPage from './components/SavedDealsPage.js';
+import BridgeSolver from './components/BridgeSolver.js'; // Import BridgeSolver
+import { FEATURES } from './config.js';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -132,4 +132,3 @@ function App() {
 }
 
 export default App;
-

@@ -1,44 +1,86 @@
 /* Basic styling for the Bidding Practice Table */
-
 .bidding-practice-container {
   padding: 20px;
   background-color: #343a40;
   min-height: 100vh;
   color: white;
-  font-family: sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.instructions {
+  background-color: rgba(255, 255, 255, 0.08); /* Slightly lighter background */
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9); /* Slightly brighter text */
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.instructions p {
+  margin: 0;
+}
+
+.instructions strong {
+  color: #ffd700; /* Gold color for emphasis */
+  font-weight: 600;
+}
+
+.instructions .draggable-handle {
+  cursor: move; /* Indicate draggable */
 }
 
 .title {
   font-size: 24px;
-  margin-bottom: 20px;
+  font-weight: 600;
+  margin: 0;
 }
 
 /* Controls section */
 .controls {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   align-items: center;
   margin-bottom: 20px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
 }
 
 .new-deal-btn,
 .save-deal-btn {
-  padding: 5px 10px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.new-deal-btn {
+  background-color: #2E7D32;
+  color: white;
 }
 
 .save-deal-btn {
-  background-color: #007bff;
+  background-color: #1976D2;
   color: white;
+}
+
+.new-deal-btn:hover,
+.save-deal-btn:hover {
+  filter: brightness(1.1);
 }
 
 .position-selector {
@@ -48,24 +90,31 @@
 }
 
 .position-selector select {
-  padding: 5px;
-  border-radius: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
-/* Table and bidding layout */
+/* Main layout */
 .table-and-bidding-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 380px; /* Explicit width for bidding hub column */
   gap: 20px;
+  align-items: stretch; /* Stretch items to fill the grid row height */
+  margin: 0 auto;
+  max-width: 1100px;
 }
 
 /* Bridge table */
 .bridge-table {
-  background-color: #2E7D32;
-  padding: 20px;
-  border-radius: 8px;
-  position: relative;
-  width: 400px;
-  height: 400px;
+  background: linear-gradient(145deg, #2E7D32, #1B5E20);
+  padding: 15px;
+  border-radius: 12px;
+  position: relative; /* Ensure this is relative for positioning bid areas */
+  width: 550px;  /* Increased width further */
+  height: 550px; /* Increased height further */
   display: grid;
   grid-template-areas: 
     ". north ."
@@ -73,59 +122,196 @@
     ". south .";
   align-items: center;
   justify-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .hand {
   background: white;
-  padding: 10px;
-  border-radius: 4px;
+  padding: 12px;
+  border-radius: 8px;
   font-family: monospace;
-  min-width: 100px;
+  min-width: 120px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
 }
 
-.hand.north { grid-area: north; }
-.hand.south { grid-area: south; }
-.hand.east { grid-area: east; }
-.hand.west { grid-area: west; }
+.hand:hover {
+  transform: scale(1.02);
+}
+
+.hand.north { grid-area: north; margin-bottom: 10px; }
+.hand.south { grid-area: south; margin-top: 10px; }
+.hand.east { grid-area: east; margin-left: 10px; }
+.hand.west { grid-area: west; margin-right: 10px; }
 
 .table-center {
-  grid-area: center;
+  /* grid-area: center; Removed grid area positioning */
+  position: absolute; /* Position absolutely within bridge-table */
+  top: 15px; /* Distance from top */
+  left: 15px; /* Distance from left */
   color: white;
-  text-align: center;
+  text-align: left; /* Align text to the left */
+  font-size: 0.9em;
+  background: rgba(0, 0, 0, 0.2); /* Slightly darker background */
+  padding: 6px 10px; /* Adjust padding */
+  border-radius: 6px;
+  z-index: 5; /* Ensure it's above table background but below hands/cards if needed */
 }
 
-/* Bidding box */
-.bidding-box {
+/* Central Bidding Hub */
+.bidding-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 12px;
+  min-width: 380px; /* Increased width */
+  min-height: 700px; /* Increased minimum height */
+}
+/* Bidding controls */
+.bidding-controls {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.position-buttons {
+/* Removed .bidding-history table styles */
+
+/* New Bidding Card Styles */
+.bidding-card-area {
+  position: absolute;
   display: flex;
-  gap: 5px;
+  flex-wrap: wrap;
+  gap: 4px; /* Increased gap slightly */
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.1); /* Subtle background */
+  border-radius: 5px;
+  max-width: 150px; /* Allow more width for cards */
+  max-height: 100px; /* Limit height */
+  overflow: hidden; /* Hide overflow for now */
+}
+
+/* Positioning for each player's bid area */
+/* Adjust these values based on your table/hand dimensions */
+.bidding-card-area-N {
+  bottom: calc(50% + 70px); /* Position above center */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.bidding-card-area-E {
+  top: 75%; /* Move lower down */
+  right: 15px; /* Position near right edge */
+  /* transform: translateY(-50%); Removed vertical centering */
+  left: auto; /* Override previous left */
+}
+
+.bidding-card-area-S {
+  top: calc(50% + 70px); /* Position below center */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.bidding-card-area-W {
+  top: 75%; /* Move lower down */
+  left: 15px; /* Position near left edge */
+  /* transform: translateY(-50%); Removed vertical centering */
+  right: auto; /* Override previous right */
+}
+
+.bidding-card {
+  padding: 5px 8px; /* Adjusted padding */
+  border: 1px solid #aaa; /* Slightly darker border */
+  border-radius: 4px; /* Slightly larger radius */
+  background-color: #f8f8f8; /* Light background */
+  color: black;
+  font-size: 1em; /* Slightly larger font */
+  font-weight: bold;
+  min-width: 40px; /* Ensure minimum width */
+  text-align: center;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.bidding-card.pass { background-color: #2E7D32; color: white; border-color: #1B5E20;} /* Green Pass */
+.bidding-card.double { background-color: #D32F2F; color: white; border-color: #B71C1C;} /* Red Double */
+.bidding-card.redouble { background-color: #1976D2; color: white; border-color: #0D47A1;} /* Blue Redouble */
+.bidding-card.red-suit { color: red; } /* Keep text red for H/D */
+.bidding-card.black-suit { color: black; } /* Keep text black for S/C */
+
+.next-bidder {
+  background: rgba(46, 125, 50, 0.2);
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 10px 0;
+  font-weight: 500;
+}
+
+.position-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 15px;
 }
 
 .position-btn {
-  padding: 5px 10px;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.position-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .position-btn.active {
-  background: #007bff;
+  background: #1976D2;
   color: white;
+  border-color: #1565C0;
 }
 
 .next-bidder {
   text-align: center;
-  margin: 10px 0;
+  margin: 15px 0;
+  padding: 10px;
+  background: rgba(46, 125, 50, 0.15);
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.next-bidder strong {
+  color: #ffd700;
+  font-size: 1.1em;
+}
+
+.bid-error {
+  color: #ff6b6b;
+  margin-top: 8px;
+  font-size: 0.9em;
+  padding: 4px 8px;
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 4px;
+}
+
+.last-bid {
+  color: #7fdbda;
+  margin-top: 8px;
+  font-size: 0.9em;
+  font-style: italic;
+  padding: 4px 8px;
+  background: rgba(127, 219, 218, 0.1);
+  border-radius: 4px;
 }
 
 .action-buttons {
   display: flex;
-  gap: 5px;
+  gap: 8px;
+  margin-top: 15px;
 }
 
 .bid-button {
@@ -175,7 +361,11 @@
   font-size: 1.8em; /* Reduced size */
   font-weight: bold;
   color: white;
-  padding: 5px;
+  padding: 5px 10px; /* Adjusted padding for background */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.5); /* Added semi-transparent dark background */
+  border-radius: 5px; /* Added rounded corners */
+  display: inline-block; /* Ensure background fits content */
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Text shadow */
 }
 
@@ -198,92 +388,105 @@
 /* Style for hidden hands */
 .hidden-hand {
   font-style: italic;
-  color: #888;
+  color: rgba(255, 255, 255, 0.6);
   text-align: center;
-  padding: 20px 0; /* Add some padding */
-  font-size: 1.2em; /* Adjust size */
-  background-color: #e9ecef; /* Light grey background for hidden */
-  border: 1px dashed #ccc;
-  min-height: 100px; /* Ensure hidden hands have some height */
+  padding: 15px;
+  font-size: 1.1em;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  min-height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 8px;
 }
 
 /* Style for the HCP display */
 .hcp-display {
-  font-size: 0.9em; /* Slightly smaller */
-  font-family: sans-serif; /* Standard font */
-  text-align: center; /* Center the text */
-  margin-top: 5px; /* Reduced space above */
-  color: #333; /* Darker text */
-  background-color: #e9ecef; /* Lighter grey background */
-  padding: 3px 6px; /* Adjusted padding */
-  border-radius: 4px; /* Slightly rounded corners */
-  display: inline-block; /* Make the background fit the text width */
-  margin-left: 5px; /* Space from hand */
+  font-size: 0.9em;
+  font-family: system-ui, -apple-system, sans-serif;
+  text-align: center;
+  margin-top: 8px;
+  color: #f0e68c; /* Changed to light yellow (Khaki) */
+  background: rgba(0, 0, 0, 0.6); /* Darker background */
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  font-weight: bold; /* Added bold font weight */
+  gap: 4px;
 }
 
 /* Style for the bidding issue boxes */
 .bidding-issue-box {
-  margin-top: 15px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
 }
 
 .bidding-issue-box button {
-  background-color: #dc3545;
+  background-color: #d32f2f;
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 8px 12px;
+  border-radius: 6px;
+  padding: 8px 16px;
   cursor: pointer;
-  font-size: 1em;
+  font-size: 0.95em;
+  font-weight: 500;
   margin: 5px;
+  transition: all 0.2s ease;
 }
 
 .bidding-issue-box button:hover {
-  background-color: #c82333;
+  background-color: #c62828;
+  transform: translateY(-1px);
 }
 
 .bidding-issue-box .issue-description {
-  margin-bottom: 10px;
-  font-size: 0.9em;
-  color: #666;
+  margin-bottom: 12px;
+  font-size: 0.95em;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
 }
 
 /* Style for the bidding issue report form */
 .issue-report-form {
-  margin-top: 10px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  margin-top: 15px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .issue-report-form textarea {
   width: 100%;
-  min-height: 80px;
-  margin-bottom: 10px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  min-height: 100px;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
   resize: vertical;
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .issue-report-form button {
-  background-color: #28a745;
+  background-color: #2E7D32;
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 8px 15px;
+  border-radius: 6px;
+  padding: 8px 16px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .issue-report-form button:hover {
-  background-color: #218838;
+  background-color: #1B5E20;
+  transform: translateY(-1px);
 }
 
 /* Style for the auction display */
@@ -292,7 +495,8 @@
   border: 1px solid #666;
   border-radius: 4px;
   padding: 0.5rem;
-  background: #f8f8f8;
+  /* background: #f8f8f8; */ /* Removed light background */
+  background: rgba(0, 0, 0, 0.2); /* Use dark background like bidding-history */
 }
 
 .auction-header {
@@ -302,7 +506,7 @@
   margin-bottom: 0.5rem;
   font-weight: bold;
   text-align: center;
-  color: #000;
+  color: white; /* Changed text to white */
 }
 
 .auction-row {
@@ -316,8 +520,9 @@
   text-align: center;
   border: 1px solid #999;
   border-radius: 2px;
-  background: white;
-  color: #000;
+  /* background: white; */ /* Removed white background */
+  background: transparent; /* Use transparent background */
+  color: white; /* Changed text to white */
   font-weight: 500;
 }
 
@@ -327,19 +532,22 @@
 }
 
 .auction-cell.pass {
-  background-color: #ddd;
-  color: #333;
+  /* background-color: #ddd; */
+  background-color: rgba(255, 255, 255, 0.15); /* Lighter gray for dark mode */
+  color: rgba(255, 255, 255, 0.7); /* Light gray text */
 }
 
 .auction-cell.double {
-  background-color: #ffcccc;
-  color: #cc0000;
+  /* background-color: #ffcccc; */
+  background-color: rgba(255, 100, 100, 0.3); /* Darker red background */
+  color: #ffdddd; /* Lighter red text */
   font-weight: bold;
 }
 
 .auction-cell.redouble {
-  background-color: #ff9999;
-  color: #990000;
+  /* background-color: #ff9999; */
+  background-color: rgba(0, 150, 255, 0.3); /* Use a blue background for contrast */
+  color: #ddeeff; /* Lighter blue text */
   font-weight: bold;
 }
 
@@ -403,4 +611,140 @@
   text-align: center;
   font-weight: bold;
   color: #495057;
+}
+
+/* --- Issues List Modal Styles --- */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it's on top */
+}
+
+.modal {
+  background-color: #444; /* Dark background for the modal */
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 80%;
+  max-width: 600px;
+  max-height: 80vh; /* Limit height */
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  color: white; /* Ensure text is visible */
+}
+
+.modal h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #eee;
+  text-align: center;
+}
+
+.issues-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Space between issue cards */
+}
+
+.issue-card {
+  background-color: #555; /* Slightly lighter background for cards */
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #666;
+}
+
+.issue-card p {
+  margin: 5px 0;
+  line-height: 1.4;
+}
+
+.issue-card strong {
+  color: #ccc;
+}
+
+.auction-sequence {
+  font-family: monospace;
+  background-color: #333;
+  padding: 5px 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+  white-space: pre-wrap; /* Allow wrapping */
+  word-break: break-all; /* Break long sequences */
+}
+
+.delete-btn, .close-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  margin-top: 10px;
+}
+
+.delete-btn {
+  background-color: #dc3545; /* Red */
+  color: white;
+  margin-right: 10px; /* Space between buttons */
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.close-btn {
+  background-color: #6c757d; /* Gray */
+  color: white;
+  display: block; /* Make it block to center easily if needed */
+  margin-left: auto; /* Push to the right */
+  margin-right: auto; /* Center if needed */
+}
+
+.close-btn:hover {
+  background-color: #5a6268;
+}
+
+/* Style for draggable elements */
+.draggable-handle {
+  cursor: grab; /* Indicate the element is draggable */
+  /* Removed border, padding, margin to simplify */
+}
+.react-draggable-dragging .draggable-handle {
+  cursor: grabbing; /* Indicate dragging is in progress */
+  /* Removed border style change */
+}
+
+/* Rebid Button Styling */
+.rebid-btn {
+  padding: 12px 20px; /* Increased padding */
+  border: none;
+  border-radius: 8px; /* Slightly larger radius */
+  cursor: pointer;
+  font-weight: 600; /* Bolder font */
+  font-size: 1.05em; /* Larger font size */
+  transition: all 0.2s ease;
+  background-color: #ff9800; /* Orange color */
+  color: white;
+  /* Removed absolute positioning */
+  margin-top: 15px; /* Add some space above the button */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Keep shadow */
+  align-self: center; /* Center button within its container if flex */
+}
+
+.rebid-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.rebid-btn:disabled {
+  background-color: #9e9e9e; /* Lighter gray when disabled */
+  color: white !important; /* Ensure text color is white */
+  cursor: not-allowed;
+  /* Removed opacity rule */
 }

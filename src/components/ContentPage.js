@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { firestore } from '../firebase';
+import { firestore } from '../firebase.js';
 import './ContentPage.css';
 
 function ContentPage() {

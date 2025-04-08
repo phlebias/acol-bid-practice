@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { playButtonSound } from '../utils/sound';
+import { playButtonSound } from '../utils/sound.js';
+import { getAuth, signOut } from "firebase/auth";
+import { getFirebaseApp } from '../firebase.js';
 import './NavBar.css';
 
 function NavBar({ isAuthenticated }) {

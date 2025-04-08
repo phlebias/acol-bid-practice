@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom'; // Remove navigate import again
 import { collection, getDocs, query, orderBy, doc, deleteDoc } from 'firebase/firestore'; // Add doc, deleteDoc
-import { firestore } from '../firebase';
+import { firestore } from '../firebase.js'; // Correct path to your Firebase config
 import './SavedDealsPage.css'; // Create this CSS file later
 
 function SavedDealsPage() {

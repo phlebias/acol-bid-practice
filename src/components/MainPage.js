@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BiddingIssueViewer from './BiddingIssueViewer.js';
 import { collection, getDocs } from 'firebase/firestore';
-import { firestore } from '../firebase';
-import { playButtonSound } from '../utils/sound';
+import { firestore } from '../firebase.js';
+import { playButtonSound } from '../utils/sound.js';
 import './MainPage.css';
 
 function MainPage() {
@@ -56,7 +57,7 @@ function MainPage() {
   return (
     <div className="main-container">
       <div className="copyright-notice">
-        <p>The summaries in the Rules section are based on the Blue Book and White Book published by the English Bridge Union (© The English Bridge Union Ltd, 2023). These summaries are unofficial and provided for informational purposes only. For the full and official rules, please refer to the EBU's website at <a href="http://www.ebu.co.uk" target="_blank" rel="noopener noreferrer">www.ebu.co.uk</a></p>
+        <p>The summaries in the Rules section are based on the Blue Book and White Book published by the English Bridge Union ( The English Bridge Union Ltd, 2023). These summaries are unofficial and provided for informational purposes only. For the full and official rules, please refer to the EBU's website at <a href="http://www.ebu.co.uk" target="_blank" rel="noopener noreferrer">www.ebu.co.uk</a></p>
       </div>
       
       <div className="sections-grid">
@@ -118,6 +119,10 @@ function MainPage() {
         >
           Go to Bidding Practice
         </button>
+
+        <div style={{ marginTop: '30px' }}>
+          <BiddingIssueViewer />
+        </div>
       </div>
 
       {/* Admin button for development mode */}

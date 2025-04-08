@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { firestore } from '../firebase';
-import { playButtonSound } from '../utils/sound';
+import { getFirebaseApp } from '../firebase.js';
+import { playButtonSound } from '../utils/sound.js';
 import './AdminPage.css';
 
 function AdminPage() {
@@ -373,4 +373,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-

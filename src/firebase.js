@@ -3,13 +3,13 @@ import { initializeFirestore, enableIndexedDbPersistence } from 'firebase/firest
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyDz4wsn8oHgH6OBcsMXM3KFolvdtAh_OAQ",
+  authDomain: "acol-pool-new.firebaseapp.com",
+  projectId: "acol-pool-new",
+  storageBucket: "acol-pool-new.firebasestorage.app",
+  messagingSenderId: "253795260111",
+  appId: "1:253795260111:web:767dda2b1f9a2f42d189ba",
+  measurementId: "G-VVMPMMP6SS"
 };
 
 // Log Firebase configuration (without sensitive data)

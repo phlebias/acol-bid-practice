@@ -109,6 +109,71 @@
   font-weight: bold;
 }
 
+.items-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.item-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bidding-issue-card {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  padding: 20px;
+}
+
+.bidding-issue-card h3 {
+  color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+}
+
+.hands-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 15px 0;
+  padding: 10px;
+  background: rgba(52, 152, 219, 0.05);
+  border-radius: 6px;
+}
+
+.hands-grid div {
+  padding: 8px;
+  border-radius: 4px;
+  background: white;
+  font-family: monospace;
+}
+
+.auction-sequence {
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(46, 204, 113, 0.05);
+  border-radius: 6px;
+}
+
+.bids-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.bid {
+  background: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  border: 1px solid #e9ecef;
+}
+
 .login-btn:hover {
   background-color: #4fa8c7;
 }
