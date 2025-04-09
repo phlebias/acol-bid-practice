@@ -4,12 +4,12 @@ import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: "acol-pool-new.firebaseapp.com",
-  projectId: "acol-pool-new",
-  storageBucket: "acol-pool-new.firebasestorage.app",
-  messagingSenderId: "253795260111",
-  appId: "1:253795260111:web:767dda2b1f9a2f42d189ba",
-  measurementId: "G-VVMPMMP6SS"
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "acol-pool-new.firebaseapp.com",
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "acol-pool-new",
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "acol-pool-new.firebasestorage.app",
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "253795260111",
+  appId: process.env.REACT_APP_FIREBASE_APP_ID || "1:253795260111:web:767dda2b1f9a2f42d189ba",
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID || "G-VVMPMMP6SS"
 };
 
 // Log Firebase configuration (without sensitive data)
