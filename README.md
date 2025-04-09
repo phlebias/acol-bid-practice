@@ -1,4 +1,44 @@
-# Getting Started with Create React App
+# ACOL Bridge Bidding Practice
+
+A React application for practicing bridge bidding using ACOL bidding system.
+
+## Setup Instructions
+
+### Prerequisites
+- Node.js (v14 or higher)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+   ```
+   git clone <repository-url>
+   cd acol-pool
+   ```
+
+2. Install dependencies:
+   ```
+   npm install
+   ```
+   or
+   ```
+   yarn install
+   ```
+
+3. Environment Setup:
+   - Copy the example environment file:
+     ```
+     cp .env.example .env
+     ```
+   - Edit the `.env` file with your Firebase credentials and other configuration
+
+### Firebase Setup
+This application uses Firebase for data storage. You'll need to:
+1. Create a Firebase project at [https://console.firebase.google.com/](https://console.firebase.google.com/)
+2. Add a web app to your Firebase project
+3. Copy the Firebase configuration to your `.env` file
+
+## Getting Started
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -68,4 +108,3 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# acol-pool

@@ -32,3 +32,22 @@ firebase-debug.log*
 /keys/
 *.json.key
 serviceAccountKey.json
+
+# Additional sensitive files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*credentials*
+*secret*
+*password*
+*token*
+.npmrc
+.yarnrc
+
+# Local config files that might contain sensitive data
+config.local.js
+config.dev.js
+.vscode/
+.idea/
